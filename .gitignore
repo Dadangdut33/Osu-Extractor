@@ -1,0 +1,9 @@
+OsuExtractorVenv/
+*.pyc
+test/
+build/
+dist/
+.vscode/
+output/img/*.jpg
+output/song/*.mp3
+output/video/*.avi
