@@ -1,0 +1,3 @@
+# \Osu-Extractor\Osu_Extractor_CLI.py: 31
+# \Osu-Extractor\osu_extractor\GetData.py: 5
+termcolor == 1.1.0
