@@ -1,5 +1,6 @@
 # Internal
 import os
+import sys
 from time import sleep
 from sys import exit
 try:
@@ -38,9 +39,12 @@ class MainProgram:
     def __init__(self):
         # First read the config file
         status, data = jsonHandler.loadSetting()
+        createNew = False
         if status == False:
+            clearScreen()
             print(colored(">> Error: ", "red") + data)
             sleep(0.5)
+            print(colored(">> Trying to create a default setting file...", "green"))
             status, data = jsonHandler.setDefault()
             if status == False:
                 print(colored(">> Error: ", "red") + data)
@@ -48,22 +52,33 @@ class MainProgram:
                 getch()
                 exit(1)
             else:
-                print(colored(">> Successfully set setting to default!", "green"))
-                sleep(1)
+                print(colored(">> Successfully set setting to default!\n", "green"))
+                createNew = True
+                sleep(0.7)
         
         self.config = jsonHandler.loadSetting()[1]
-        # Check if the osu path is correct or not
+        # Check if the osu path is on default path or not
         if not os.path.exists(self.config["osu_path"]) or "osu!.exe" not in getAllItemsInFolder(self.config["osu_path"]):
+            if not createNew: clearScreen()
             while True:
                 print(colored('Attention!!', 'red', 'on_grey', ['reverse']))
-                print(colored("Looks like your osu folder is not installed on the default path", "yellow"))
-                self.config["osu_path"] = input(colored("Please input your Osu! path: ", "yellow")).replace("\\", "/")
+                if createNew: 
+                    print(colored("Looks like your osu folder is not installed on the default path", "yellow"))
+                else: 
+                    print(colored("Couldn't found Osu!.exe in your osu path!", "yellow"))
+                
+                # Ask to input the correct path
+                self.config["osu_path"] = input(colored("Please input the correct Osu! path: ", "yellow")).replace("/", "\\")
+                
+                # Check whether the path is correct or not
                 if not os.path.exists(self.config["osu_path"]):
                     print(colored(">> Error: ", "red") + "The path you input is not correct!")
-                    print(colored(">> Please input the correct path!", "white"), end="", flush=True)
-                    getch()
-                    clearScreen()
-                    continue
+                    print(colored(">> Please input the correct path!", "white"), end="")
+                    input()
+                    # Remove all the line starting from attention,
+                    for i in range(0, 5):
+                        sys.stdout.write("\033[F") # Go up 1 line
+                        sys.stdout.write("\033[K") # Clear to the end of line
                 else:
                     if "osu" not in self.config["osu_path"].lower() or "osu!.exe" not in getAllItemsInFolder(self.config["osu_path"]):
                         signalToGoBack = False
@@ -71,16 +86,16 @@ class MainProgram:
                         print(colored(">> It seems like it's not a correct Osu! folder. Are you sure you want to set this as the Osu! path? (Y/N)", "white"), end="", flush=True)
                         while True:
                             ch = ord(getch())
-                            if ch == 89 or ch == 121:
+                            if ch == 89 or ch == 121: # Y
                                 break
-                            elif ch == 78 or ch == 110:
-                                print(colored("\n>> Please Re-enter it correctly the next time!", "green"))
-                                print(colored("Press any key to continue...", "cyan"), end="", flush=True)
-                                getch()
+                            elif ch == 78 or ch == 110: # N
                                 signalToGoBack = True
                                 break
                         if signalToGoBack:
-                            clearScreen()
+                            print('\0')
+                            for i in range(0, 5):
+                                sys.stdout.write("\033[F") # Go up 1 line
+                                sys.stdout.write("\033[K") # Clear to the end of line
                             continue
                     
                     # Save the setting
@@ -93,10 +108,10 @@ class MainProgram:
         self.colon = colored(": ", "yellow")
 
     def getOutputPath(self, path, type):
-        if path != "auto":
-            return path
+        if path == "default":
+            return f"{dir_path}\\output\\{type}\\"
         else:
-            return dir_path + f"\\output\\{type}\\"
+            return path
 
     def menuExtract(self):
         insideMenu = True
@@ -138,14 +153,14 @@ class MainProgram:
         print(colored(">> Current settings", "green"))
         print(colored("[~] Osu! path\t", "blue") + self.colon + colored(self.config["osu_path"], "green"))
         print(colored("[~] Output path\t", "blue") + self.colon)
-        print(colored("    song\t", "yellow") + self.colon + self.getOutputPath(colored(self.config["output_path"]['song']), "green"))
-        print(colored("    img\t\t", "yellow") + self.colon + self.getOutputPath(colored(self.config["output_path"]['img']), "green"))
-        print(colored("    video\t", "yellow") + self.colon + self.getOutputPath(colored(self.config["output_path"]['video']), "green"))
+        print(colored("    song\t", "yellow") + self.colon + colored(self.getOutputPath(self.config["output_path"]['song'], "song"), "cyan"))
+        print(colored("    img\t\t", "yellow") + self.colon + colored(self.getOutputPath(self.config["output_path"]['img'], "img"), "cyan"))
+        print(colored("    video\t", "yellow") + self.colon + colored(self.getOutputPath(self.config["output_path"]['video'], "video"), "cyan"))
         print(colored("[~] Extract type", "blue") + self.colon)
-        print(colored("    1. Mp3 (.mp3) ✓", "green") if self.config['default_extract']['song'] else colored("    1. Mp3 (.mp3) ✗", "red"))
-        print(colored("    2. Image (.jpg) ✓", "green") if self.config['default_extract']['img'] else colored("    2. Image (.jpg) ✗", "red"))
-        print(colored("    3. Video (.avi) ✓", "green") if self.config['default_extract']['video'] else colored("    3. Video (.avi) ✗", "red"))
-        print(colored("    4. Custom ✓", "green") if self.config['default_extract']['custom'] else colored("    4. Custom ✗", "red"))
+        print(colored(f"    1. Mp3 (.mp3) (Y)", "green") if self.config['default_extract']['song'] else colored("    1. Mp3 (.mp3) (N)", "red"))
+        print(colored(f"    2. Image (.jpg) (Y)", "green") if self.config['default_extract']['img'] else colored("    2. Image (.jpg) (N)", "red"))
+        print(colored(f"    3. Video (.avi) (Y)", "green") if self.config['default_extract']['video'] else colored("    3. Video (.avi) (N)", "red"))
+        print(colored(f"    4. Custom (Y)", "green") if self.config['default_extract']['custom'] else colored("    4. Custom (N)", "red"))
         if self.config['default_extract']['custom']:
             print(colored("[~] Custom extract list", "blue") + self.colon)
             print("    ", end="", flush=True)
