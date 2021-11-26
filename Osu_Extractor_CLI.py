@@ -286,17 +286,6 @@ class MainProgram:
                     break
                 else:
                     if ch - 48 in self.settingMenuOpt:
-                        # changePath = None
-                        # if ch - 48 == 2:
-                        #     changePath = "song"
-                        # elif ch - 48 == 3:
-                        #     changePath = "img"
-                        # elif ch - 48 == 4:
-                        #     changePath = "video"
-                        
-                        # if changePath:
-                        #     self.settingMenuOpt[ch - 48](changePath)
-                        # else:
                         self.settingMenuOpt[ch - 48]()
                         break
 
