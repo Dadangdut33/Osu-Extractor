@@ -4,5 +4,12 @@
         "video": "default",
         "song": "default"
     },
-    "osu_path": "C:\\Games\\Osu"
+    "default_extract": {
+        "song": true,
+        "img": false,
+        "video": false,
+        "custom": false,
+        "custom_list": []
+    },
+    "osu_path": "C:/Games/Osu"
 }

@@ -20,6 +20,13 @@ class JsonHandler:
                 "video": "default",
                 "song": "default"
             },
+            "default_extract": {
+                "song": True,
+                "img": False,
+                "video": False,
+                "custom": False,
+                "custom_list": []
+            },
             "osu_path": f"{homedir}\AppData\Local\osu!"
         }
 
