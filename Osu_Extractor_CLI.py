@@ -111,8 +111,8 @@ class MainProgram:
             2: lambda: self.changeOutputPath("song"),
             3: lambda: self.changeOutputPath("img"),
             4: lambda: self.changeOutputPath("video"),
-            # "5": lambda x: self.changeExtractType,
-            # "6": lambda x: self.resetDefault
+            5: lambda: self.changeExtractType(),
+            6: lambda: self.resetDefault()
         }
 
     def changeOsuPath(self):
@@ -195,6 +195,32 @@ class MainProgram:
                 print(colored("Press any key to continue...", "cyan"), end="", flush=True)
                 getch()
                 break
+
+    def resetDefault(self):
+        clearScreen()
+        print(colored("=" * 70, "blue"))
+        print(colored(">> Reset to default", "green"))
+        print(colored("=" * 70, "blue"))
+        print(colored(">> Are you sure you want to reset to default? (Y/N) ", "white"), end="", flush=True)
+        while True:
+            ch = ord(getch())
+
+            if ch == 89 or ch == 121: # Y
+                print("Y")
+                resetStatus, statusStr = jsonHandler.setDefault()
+                if resetStatus:
+                    self.config = jsonHandler.loadSetting()[1]
+                    print(colored(">> Successfully reset to default!", "green"))
+                    print(colored("Press any key to continue...", "cyan"), end="", flush=True)
+                    getch()
+                    break
+                else:
+                    print(colored(">> Error: ", "red") + statusStr)
+                    print(colored("Press any key to continue...", "cyan"), end="", flush=True)
+                    getch()
+                    break
+            elif ch == 78 or ch == 110: # N
+                return
 
     def getOutputPath(self, path, type):
         if path.lower() == "default":
