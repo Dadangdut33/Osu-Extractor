@@ -106,9 +106,98 @@ class MainProgram:
                     break
 
         self.colon = colored(": ", "yellow")
+        self.settingMenuOpt = {
+            1: lambda: self.changeOsuPath(),
+            2: lambda: self.changeOutputPath("song"),
+            3: lambda: self.changeOutputPath("img"),
+            4: lambda: self.changeOutputPath("video"),
+            # "5": lambda x: self.changeExtractType,
+            # "6": lambda x: self.resetDefault
+        }
+
+    def changeOsuPath(self):
+        while True:
+            clearScreen()
+            print(colored("=" * 70, "blue"))
+            print(colored(">> Change Osu! path", "green"))
+            print(colored("=" * 70, "blue"))
+            print(colored(">> Press ctrl + c if you want to go back", "blue"))
+            print(colored(">> Input ", "blue") + colored("default", "yellow") + colored(" if you want to use the default path", "blue"))
+            print(colored(">> Set:", "blue"))
+            print(colored("   Current path\t: ", "yellow") + colored(self.config["osu_path"], "cyan"))
+            try:
+                path = input(colored("   Into\t\t: ", "yellow"))
+            except KeyboardInterrupt:
+                break
+            
+            path = path.strip()
+            print()
+            if not os.path.exists(path) and path.lower().strip() != "default":
+                print(colored(">> Error: ", "red") + "The path you input is not correct!")
+                print(colored(">> Please input the correct path!", "white"), end="", flush=True)
+                getch()
+            else:
+                if path == "default":
+                    path = jsonHandler.default_Setting['osu_path']
+                
+                if "osu!.exe" not in getAllItemsInFolder(path):
+                    signalToGoBack = False
+                    print(colored('Attention!!', 'red', 'on_grey', ['reverse']))
+                    print(colored(">> It seems like it's not a correct Osu! folder. Are you sure you want to set this as the Osu! path? (Y/N)", "white"), end="", flush=True)
+                    while True:
+                        ch = ord(getch())
+                        if ch == 89 or ch == 121: # Y
+                            break
+                        elif ch == 78 or ch == 110: # N
+                            signalToGoBack = True
+                            break
+                    if signalToGoBack:
+                        continue
+
+                self.config["osu_path"] = path
+                jsonHandler.writeSetting(self.config)
+                print(colored(">> Successfully set ", "green") + colored(self.config["osu_path"], "yellow") + colored(" as the Osu! path!", "green"))
+                print(colored("Press any key to continue...", "cyan"), end="", flush=True)
+                getch()
+                break
+
+    def changeOutputPath(self, changeType):
+        """Change the output path
+
+        Args:
+            changeType (str): type of the output (song, img, video)
+        """
+        while True:
+            clearScreen()
+            print(colored("=" * 70, "blue"))
+            print(colored(f">> Change output path ({changeType})", "green"))
+            print(colored("=" * 70, "blue"))
+            print(colored(">> Press ctrl + c if you want to go back", "blue"))
+            print(colored(">> Input ", "blue") + colored("default", "yellow") + colored(" if you want to use the default path", "blue"))
+            print(colored(">> Set:", "blue"))
+            print(colored("   Current path\t: ", "yellow") + colored(self.getOutputPath(self.config["output_path"][changeType], changeType), "cyan"))
+            
+            try:
+                path = input(colored("   Into\t\t: ", "yellow"))
+            except KeyboardInterrupt:
+                break
+            
+            path = path.strip()
+            print()
+            if not os.path.exists(path) and path.lower() != "default":
+                print(colored(">> Error: ", "red") + "The path you input is not correct!")
+                print(colored(">> Please input the correct path!", "white"), end="", flush=True)
+                getch()
+            else:
+                self.config["output_path"][changeType] = path.lower() if "default" in path.lower() else path
+                jsonHandler.writeSetting(self.config)
+                print(colored(">> Successfully set ", "green") + colored(self.getOutputPath(self.config["output_path"][changeType], changeType), "yellow") + colored(" as the output path!", "green"))
+                print(colored("Press any key to continue...", "cyan"), end="", flush=True)
+                getch()
+                break
 
     def getOutputPath(self, path, type):
-        if path == "default":
+        if path.lower() == "default":
             return f"{dir_path}\\output\\{type}\\"
         else:
             return path
@@ -118,19 +207,19 @@ class MainProgram:
         # Extract the beatmap
         while insideMenu:
             clearScreen()
-            print(colored("=" * 50, "blue"))
+            print(colored("=" * 70, "blue"))
             print(colored(">> Extract Beatmap", "green"))
-            print(colored("=" * 50, "blue"))
+            print(colored("=" * 70, "blue"))
             
             self.printCurrentSetting()
 
-            print(colored("=" * 50, "blue"))
+            print(colored("=" * 70, "blue"))
             print(colored(">> Press esc key if you want to go back", "blue"))
             print(colored(">> Options:", "blue"))
             print(colored("  1. Extract All Beatmap", "white"))
             print(colored("  2. Extract Certain Beatmap", "white"))
             print(colored("  3. Change setting", "white"))
-            print(colored("=" * 50, "blue"))
+            print(colored("=" * 70, "blue"))
             print(colored(">> ", "yellow"), end="", flush=True)
             while True:
                 ch = ord(getch())
@@ -143,7 +232,7 @@ class MainProgram:
                 elif ch == 51:
                     self.menuSetting()
                     break
-                elif ch == 27:
+                elif ch == 27: # esc
                     insideMenu = False
                     break
                 else:
@@ -186,7 +275,7 @@ class MainProgram:
             print(colored("  2. Change Output path (song)", "white"))
             print(colored("  3. Change Output path (img)", "white"))
             print(colored("  4. Change Output path (video)", "white"))
-            print(colored("  5. Change extract type value)", "white"))
+            print(colored("  5. Change extract type value", "white"))
             print(colored("  6. Reset default options", "white"))
             print(colored("=" * 50, "blue"))
             print(colored(">> ", "yellow"), end="", flush=True)
@@ -196,6 +285,21 @@ class MainProgram:
                     insideMenu = False
                     break
                 else:
+                    if ch - 48 in self.settingMenuOpt:
+                        # changePath = None
+                        # if ch - 48 == 2:
+                        #     changePath = "song"
+                        # elif ch - 48 == 3:
+                        #     changePath = "img"
+                        # elif ch - 48 == 4:
+                        #     changePath = "video"
+                        
+                        # if changePath:
+                        #     self.settingMenuOpt[ch - 48](changePath)
+                        # else:
+                        self.settingMenuOpt[ch - 48]()
+                        break
+
                     continue
 
     def menuAbout(self):
