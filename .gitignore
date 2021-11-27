@@ -7,3 +7,4 @@ dist/
 output/img/*.jpg
 output/song/*.mp3
 output/video/*.avi
+output/custom/
