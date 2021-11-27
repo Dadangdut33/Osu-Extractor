@@ -1,6 +1,7 @@
 # Internal
 import os
 import sys
+import time
 from time import sleep
 from sys import exit
 try:
@@ -30,6 +31,7 @@ from osu_extractor.Public import jsonHandler
 
 # External
 from termcolor import colored
+from tqdm import tqdm
 
 # Local
 dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -174,6 +176,7 @@ class MainProgram:
             print(colored("=" * 70, "blue"))
             print(colored(">> Press", "blue") + colored(' ctrl + c', 'red') + colored(" to cancel, press", "blue")  + colored(' enter ', 'yellow') + colored("to confirm", "blue"))
             print(colored(">> Input ", "blue") + colored("default", "yellow") + colored(" if you want to use the default path", "blue"))
+            print(colored(">> Please note that custom output path will be created automatically in the default ouput path", "blue"))
             print(colored(">> Set:", "blue"))
             print(colored("   Current path\t: ", "yellow") + colored(self.getOutputPath(self.config["output_path"][changeType], changeType), "cyan"))
             
@@ -303,11 +306,106 @@ class MainProgram:
             elif ch == 78 or ch == 110: # N
                 return
 
-    def getOutputPath(self, path, type):
+    def getOutputPath(self, path, fileFormat):
         if path.lower() == "default":
-            return f"{dir_path}\\output\\{type}\\"
+            return f"{dir_path}\\output\\{fileFormat.replace('.', '')}\\"
         else:
             return path
+
+    def extractAllBeatmap(self):
+        continueExtract = False
+        insideMenu = True
+        # Get the beatmaps list
+        path = f"{self.config['osu_path']}\Songs"
+        beatmapsPath = getSubFolder(path)
+        totals = len(beatmapsPath)
+
+        while insideMenu:
+            clearScreen()
+            print(colored("=" * 70, "blue"))
+            print(colored(">> Extract all beatmap", "green"))
+            print(colored("=" * 70, "blue"))
+            print(colored("Found ", "blue") + colored(str(totals), "yellow") + colored(" beatmaps", "blue"))
+            print(colored(">> Confirmation", "blue") + colored(" esc ", "red") + colored("if you want to go back", "blue"))
+            print(colored(">> Are you sure you want to extract all beatmaps with the current setting (Y/N):", "blue"))
+            print(colored(">> ", "yellow"), end="", flush=True)
+
+            while True:
+                ch = ord(getch())
+                if ch == 89 or ch == 121: # Y
+                    continueExtract = True
+                    insideMenu = False
+                    break
+                elif ch == 78 or ch == 110: # N
+                    insideMenu = False
+                    break
+
+        if not continueExtract:
+            return
+
+        # Extract all beatmaps
+        totalExtracted = 0
+        # Get start time
+        startTime = time.time()
+        # Extracting
+        try:
+            clearScreen()
+            print(colored("=" * 80, "blue"))
+            print(colored(">> Extract all beatmap", "green"))
+            print(colored("=" * 80, "blue"))
+            print(colored(">> Press", "blue") + colored(' ctrl + c', 'red') + colored(" to stopped the process midway", "blue"))
+            print(colored("Extracting...", "green"))
+
+            with tqdm(total=totals, colour="blue", ncols=100) as pbar:
+                for item in beatmapsPath:
+                    theFile = getAllItemsInFolder(item)
+                    # Check extract type
+                    if self.config['default_extract']['song']:
+                        extractFiles(item, theFile, ".mp3", self.getOutputPath(self.config['output_path']['song'], "song"), getFolderName(item))
+                    if self.config['default_extract']['img']:
+                        extractFiles(item, theFile, ".jpg", self.getOutputPath(self.config['output_path']['img'], "img"), getFolderName(item))
+                    if self.config['default_extract']['video']:
+                        extractFiles(item, theFile, ".avi", self.getOutputPath(self.config['output_path']['video'], "video"), getFolderName(item))
+                    if self.config['default_extract']['custom']:
+                        for custom in self.config['default_extract']['custom_list']:
+                            extractFiles(item, theFile, custom, self.getOutputPath("default", "custom"), getFolderName(item))
+
+                    pbar.update(1)
+                    totalExtracted += 1
+            print()
+            # get end time
+            endTime = time.time()
+
+        except KeyboardInterrupt:
+            # get end time
+            endTime = time.time()
+            print()
+            print(colored(">> Process stopped by user", "red"))
+
+        # Display how much beatmaps are extracted
+        print(colored(">> Successfully extracted ", "green") + colored(str(totalExtracted), "yellow") + colored(" beatmaps", "green"))
+        # Print total time taken
+        print(colored(">> Total time taken: ", "green") + colored(str(round(endTime - startTime, 2)), "yellow") + colored(" seconds", "green"))
+        print(colored(">> Press any key to continue...", "cyan"), end="", flush=True)
+        getch()
+
+    def printCurrentSetting(self):
+        print(colored(">> Current settings", "green"))
+        print(colored("[~] Osu! path\t", "blue") + self.colon + colored(self.config["osu_path"], "green"))
+        print(colored("[~] Output path\t", "blue") + self.colon)
+        print(colored("    song\t", "yellow") + self.colon + colored(self.getOutputPath(self.config["output_path"]['song'], "song"), "cyan"))
+        print(colored("    img\t\t", "yellow") + self.colon + colored(self.getOutputPath(self.config["output_path"]['img'], "img"), "cyan"))
+        print(colored("    video\t", "yellow") + self.colon + colored(self.getOutputPath(self.config["output_path"]['video'], "video"), "cyan"))
+        print(colored("[~] Extract type", "blue") + self.colon)
+        print(colored(f"    1. Mp3 (.mp3) (Y)", "green") if self.config['default_extract']['song'] else colored("    1. Mp3 (.mp3) (N)", "red"))
+        print(colored(f"    2. Image (.jpg) (Y)", "green") if self.config['default_extract']['img'] else colored("    2. Image (.jpg) (N)", "red"))
+        print(colored(f"    3. Video (.avi) (Y)", "green") if self.config['default_extract']['video'] else colored("    3. Video (.avi) (N)", "red"))
+        print(colored(f"    4. Custom (Y)", "green") if self.config['default_extract']['custom'] else colored("    4. Custom (N)", "red"))
+        print(colored("[~] Custom extract list", "blue") + self.colon)
+        print("    ", end="", flush=True)
+        for item in self.config["default_extract"]["custom_list"]:
+            print(colored(item, "green" if self.config['default_extract']['custom'] else "red"), end=" ")
+        print()
 
     def menuExtract(self):
         insideMenu = True
@@ -344,25 +442,6 @@ class MainProgram:
                     break
                 else:
                     continue
-
-    def printCurrentSetting(self):
-        print(colored(">> Current settings", "green"))
-        print(colored("[~] Osu! path\t", "blue") + self.colon + colored(self.config["osu_path"], "green"))
-        print(colored("[~] Output path\t", "blue") + self.colon)
-        print(colored("    song\t", "yellow") + self.colon + colored(self.getOutputPath(self.config["output_path"]['song'], "song"), "cyan"))
-        print(colored("    img\t\t", "yellow") + self.colon + colored(self.getOutputPath(self.config["output_path"]['img'], "img"), "cyan"))
-        print(colored("    video\t", "yellow") + self.colon + colored(self.getOutputPath(self.config["output_path"]['video'], "video"), "cyan"))
-        print(colored("[~] Extract type", "blue") + self.colon)
-        print(colored(f"    1. Mp3 (.mp3) (Y)", "green") if self.config['default_extract']['song'] else colored("    1. Mp3 (.mp3) (N)", "red"))
-        print(colored(f"    2. Image (.jpg) (Y)", "green") if self.config['default_extract']['img'] else colored("    2. Image (.jpg) (N)", "red"))
-        print(colored(f"    3. Video (.avi) (Y)", "green") if self.config['default_extract']['video'] else colored("    3. Video (.avi) (N)", "red"))
-        print(colored(f"    4. Custom (Y)", "green") if self.config['default_extract']['custom'] else colored("    4. Custom (N)", "red"))
-        print(colored("[~] Custom extract list", "blue") + self.colon)
-        print("    ", end="", flush=True)
-        for item in self.config["default_extract"]["custom_list"]:
-            print(colored(item, "green" if self.config['default_extract']['custom'] else "red"), end=" ")
-        print()
-
 
     def menuSetting(self):
         insideMenu = True
@@ -453,14 +532,3 @@ if __name__ == "__main__":
                 break
             else:
                 continue
-
-# Ex
-# path = "C:\Games\Osu\Songs"
-
-# beatmapsPath = getSubFolder(path)
-# print(len(beatmapsPath))
-
-# # Tests
-# beatmap_3 = getAllItemsInFolder(beatmapsPath[3])
-
-# extractFiles(beatmapsPath[3], beatmap_3, ".jpg", dir_path + "\\output\\img\\")

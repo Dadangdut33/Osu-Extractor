@@ -1,7 +1,9 @@
+# Internal
 import os
 from os import listdir
 from os.path import isfile, join
 import shutil
+# External
 from termcolor import colored
 
 def getSubFolder(path):
@@ -13,11 +15,13 @@ def getAllItemsInFolder(path):
 def getFolderName(path):
     return path.split("\\")[-1]
 
-def extractFiles(root, itemInsideFolder, type, outputDirPlusName):
-    print(colored(f"Extracting {type} files from {root}", "green"))
+def extractFiles(root, itemInsideFolder, type, outputDir, beatMapName, printProgress=False):
+    if printProgress:
+        print(colored(f"\nExtracting {type} files from {root}", "green"))
+    createPathIfNotExist(outputDir)
     for file in itemInsideFolder:
         if file.endswith(type):
-            shutil.copy2(root + "\\" + file, outputDirPlusName)
+            shutil.copy2(root + "\\" + file, outputDir + "\\" + f"{beatMapName} {file}")
 
 def createPathIfNotExist(path):
     if not os.path.exists(path):
