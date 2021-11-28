@@ -8,6 +8,7 @@
     <a href="https://lgtm.com/projects/g/Dadangdut33/Osu-Extractor/context:python"><img alt="Language grade: Python" src="https://img.shields.io/lgtm/grade/python/g/Dadangdut33/Osu-Extractor.svg?logo=lgtm&logoWidth=18"/></a>
     <a href="https://github.com/Dadangdut33/Osu-Extractor/issues"><img alt="GitHub issues" src="https://img.shields.io/github/issues/Dadangdut33/Osu-Extractor"></a>
     <a href="https://github.com/Dadangdut33/Osu-Extractor/pulls"><img alt="GitHub pull requests" src="https://img.shields.io/github/issues-pr/Dadangdut33/Osu-Extractor"></a>
+    <a href="https://github.com/Dadangdut33/Osu-Extractor/releases"><img src="https://img.shields.io/github/downloads/Dadangdut33/Osu-Extractor/total"></a><br>
     <a href="https://github.com/Dadangdut33/Osu-Extractor/stargazers"><img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/Dadangdut33/Osu-Extractor?style=social"></a>
     <a href="https://github.com/Dadangdut33/Osu-Extractor/network/members"><img alt="GitHub forks" src="https://img.shields.io/github/forks/Dadangdut33/Osu-Extractor?style=social"></a>
 </p>
