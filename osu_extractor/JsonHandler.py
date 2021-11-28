@@ -18,11 +18,12 @@ class JsonHandler:
             "output_path": {
                 "img": "default",
                 "video": "default",
-                "song": "default"
+                "song": "default",
+                "custom": "default"
             },
             "default_extract": {
                 "song": True,
-                "img": False,
+                "img": True,
                 "video": False,
                 "custom": False,
                 "custom_list": []

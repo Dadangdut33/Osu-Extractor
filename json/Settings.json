@@ -2,11 +2,12 @@
     "output_path": {
         "img": "default",
         "video": "default",
-        "song": "default"
+        "song": "default",
+        "custom": "default"
     },
     "default_extract": {
         "song": true,
-        "img": false,
+        "img": true,
         "video": false,
         "custom": false,
         "custom_list": []

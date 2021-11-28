@@ -110,11 +110,9 @@ class MainProgram:
         self.colon = colored(": ", "yellow")
         self.settingMenuOpt = {
             1: lambda: self.changeOsuPath(),
-            2: lambda: self.changeOutputPath("song"),
-            3: lambda: self.changeOutputPath("img"),
-            4: lambda: self.changeOutputPath("video"),
-            5: lambda: self.changeExtractType(),
-            6: lambda: self.resetDefault()
+            2: lambda: self.menuChangeOutputPath(),
+            3: lambda: self.changeExtractType(),
+            4: lambda: self.resetDefault()
         }
 
     def changeOsuPath(self):
@@ -163,6 +161,38 @@ class MainProgram:
                 getch()
                 break
 
+    def menuChangeOutputPath(self):
+        optChangeOutputPath = { 
+            1: lambda: self.changeOutputPath("song"),
+            2: lambda: self.changeOutputPath("img"),
+            3: lambda: self.changeOutputPath("video"),
+            4: lambda: self.changeOutputPath("custom"),
+        }
+        insideMenu = True
+        while insideMenu:
+            clearScreen()
+            print(colored("=" * 70, "blue"))
+            print(colored(">> Change output path", "green"))
+            print(colored("=" * 70, "blue"))
+            print(colored(">> Press", "blue") + colored(' esc ', 'red') + colored("if you want to go back", "blue"))
+            print(colored(">> Set:", "blue"))
+            print(colored(" 1. Song\t", "yellow") + self.colon + colored(self.getOutputPath(self.config["output_path"]['song'], "song"), "cyan"))
+            print(colored(" 2. Img\t\t", "yellow") + self.colon + colored(self.getOutputPath(self.config["output_path"]['img'], "img"), "cyan"))
+            print(colored(" 3. Video\t", "yellow") + self.colon + colored(self.getOutputPath(self.config["output_path"]['video'], "video"), "cyan"))
+            print(colored(" 4. Custom\t", "yellow") + self.colon + colored(self.getOutputPath(self.config["output_path"]["custom"], "custom"), "cyan"))
+            print(colored("=" * 70, "blue"))
+            print(colored(">> ", "yellow"), end="", flush=True)
+
+            while True:
+                ch = ord(getch())
+                if ch == 27: # ESC
+                    insideMenu = False
+                    break
+
+                if ch - 48 in optChangeOutputPath.keys():
+                    optChangeOutputPath[ch - 48]()
+                    break
+
     def changeOutputPath(self, changeType):
         """Change the output path
 
@@ -176,7 +206,6 @@ class MainProgram:
             print(colored("=" * 70, "blue"))
             print(colored(">> Press", "blue") + colored(' ctrl + c', 'red') + colored(" to cancel, press", "blue")  + colored(' enter ', 'yellow') + colored("to confirm", "blue"))
             print(colored(">> Input ", "blue") + colored("default", "yellow") + colored(" if you want to use the default path", "blue"))
-            print(colored(">> Please note that custom output path will be created automatically in the default ouput path", "blue"))
             print(colored(">> Set:", "blue"))
             print(colored("   Current path\t: ", "yellow") + colored(self.getOutputPath(self.config["output_path"][changeType], changeType), "cyan"))
             
@@ -270,11 +299,29 @@ class MainProgram:
             if ch == 27: # ESC
                 break
             if ch == 13: # enter
-                self.config["default_extract"]["custom_list"] = strCustom.strip().split(" ") if strCustom.strip() != "" else [strCustom]
+                # Split input to array by space
+                toSave = strCustom.strip().split(" ") if strCustom.strip() != "" else [strCustom]
 
-                if self.config["default_extract"]["custom_list"] == ['\r']:
-                    self.config["default_extract"]["custom_list"] = []
+                # If empty
+                if toSave == ['\r']:
+                    toSave = []
 
+                # Check if the format is correct
+                correct = True
+                if len(toSave) > 0:
+                    for item in toSave:
+                        if not item.startswith(".") or len(item) < 2:
+                            correct = False
+                            print(colored("\n>> Error: ", "red") + "The format is not correct!")
+                            print(colored(">> Please input the correct format!", "white"), end="", flush=True)
+                            getch()
+                            break
+                
+                if not correct:
+                    continue
+                
+                # Save
+                self.config["default_extract"]["custom_list"] = toSave
                 print(colored("\n>> Successfully set \"", "green") + colored(strCustom.strip(), "yellow") + colored("\" as the custom extract list!", "green"))
                 print(colored("   Press any key to continue...", "cyan"), end="", flush=True)
                 getch()
@@ -308,7 +355,7 @@ class MainProgram:
 
     def getOutputPath(self, path, fileFormat):
         if path.lower() == "default":
-            return f"{dir_path}\\output\\{fileFormat.replace('.', '')}\\"
+            return f"{dir_path}\\output\\{fileFormat}\\"
         else:
             return path
 
@@ -322,9 +369,9 @@ class MainProgram:
 
         while insideMenu:
             clearScreen()
-            print(colored("=" * 70, "blue"))
+            print(colored("=" * 100, "blue"))
             print(colored(">> Extract all beatmap", "green"))
-            print(colored("=" * 70, "blue"))
+            print(colored("=" * 100, "blue"))
             print(colored("Found ", "blue") + colored(str(totals), "yellow") + colored(" beatmaps", "blue"))
             print(colored(">> Confirmation", "blue") + colored(" esc ", "red") + colored("if you want to go back", "blue"))
             print(colored(">> Are you sure you want to extract all beatmaps with the current setting (Y/N):", "blue"))
@@ -350,9 +397,9 @@ class MainProgram:
         # Extracting
         try:
             clearScreen()
-            print(colored("=" * 80, "blue"))
+            print(colored("=" * 100, "blue"))
             print(colored(">> Extract all beatmap", "green"))
-            print(colored("=" * 80, "blue"))
+            print(colored("=" * 100, "blue"))
             print(colored(">> Press", "blue") + colored(' ctrl + c', 'red') + colored(" to stopped the process midway", "blue"))
             print(colored("Extracting...", "green"))
 
@@ -396,6 +443,7 @@ class MainProgram:
         print(colored("    song\t", "yellow") + self.colon + colored(self.getOutputPath(self.config["output_path"]['song'], "song"), "cyan"))
         print(colored("    img\t\t", "yellow") + self.colon + colored(self.getOutputPath(self.config["output_path"]['img'], "img"), "cyan"))
         print(colored("    video\t", "yellow") + self.colon + colored(self.getOutputPath(self.config["output_path"]['video'], "video"), "cyan"))
+        print(colored("    custom\t", "yellow") + self.colon + colored(self.getOutputPath(self.config["output_path"]["custom"], "custom"), "cyan"))
         print(colored("[~] Extract type", "blue") + self.colon)
         print(colored(f"    1. Mp3 (.mp3) (Y)", "green") if self.config['default_extract']['song'] else colored("    1. Mp3 (.mp3) (N)", "red"))
         print(colored(f"    2. Image (.jpg) (Y)", "green") if self.config['default_extract']['img'] else colored("    2. Image (.jpg) (N)", "red"))
@@ -458,11 +506,9 @@ class MainProgram:
             print(colored(">> Press", "blue") + colored(" esc ", "red") + colored("if you want to go back", "blue"))
             print(colored(">> Options:", "blue"))
             print(colored("  1. Change Osu! path", "white"))
-            print(colored("  2. Change Output path (song)", "white"))
-            print(colored("  3. Change Output path (img)", "white"))
-            print(colored("  4. Change Output path (video)", "white"))
-            print(colored("  5. Change extract type value", "white"))
-            print(colored("  6. Reset default options", "white"))
+            print(colored("  2. Change Output path", "white"))
+            print(colored("  3. Change extract type value", "white"))
+            print(colored("  4. Reset default options", "white"))
             print(colored("=" * 50, "blue"))
             print(colored(">> ", "yellow"), end="", flush=True)
             while True:
