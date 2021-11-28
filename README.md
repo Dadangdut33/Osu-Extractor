@@ -24,7 +24,7 @@ Extract/copy song, images, videos, and more from installed Osu beatmaps. Made us
 - [Disclaimer](#disclaimer)
 
 ---
-<br>
+
 
 # Preview
 - OsuExtractor CLI
@@ -50,7 +50,7 @@ Extract/copy song, images, videos, and more from installed Osu beatmaps. Made us
 
 # Downloads
 - [OsuExtractor CLI](https://github.com/Dadangdut33/Osu-Extractor/releases/tag/V1.0_CLI)
-- [OsuExtractor GUI]()
+- [OsuExtractor GUI](#)
 
 # How To Install
 1. Download either the CLI or GUI version
