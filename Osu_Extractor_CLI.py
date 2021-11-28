@@ -530,19 +530,19 @@ class MainProgram:
         # Extract the beatmap
         while insideMenu:
             clearScreen()
-            print(colored("=" * 70, "blue"))
+            print(colored("=" * 75, "blue"))
             print(colored(">> Extract Beatmap", "green"))
-            print(colored("=" * 70, "blue"))
+            print(colored("=" * 75, "blue"))
             
             self.printCurrentSetting()
 
-            print(colored("=" * 70, "blue"))
+            print(colored("=" * 75, "blue"))
             print(colored(">> Press", "blue") + colored(" esc ", "red") + colored("if you want to go back", "blue"))
             print(colored(">> Options:", "blue"))
             print(colored("  1. Extract All Beatmap", "white"))
             print(colored("  2. Extract Certain Beatmap", "white"))
             print(colored("  3. Change setting", "white"))
-            print(colored("=" * 70, "blue"))
+            print(colored("=" * 75, "blue"))
             print(colored(">> ", "yellow"), end="", flush=True)
             while True:
                 ch = ord(getch())
@@ -580,20 +580,20 @@ class MainProgram:
         # Change the setting
         while insideMenu:
             clearScreen()
-            print(colored("=" * 50, "blue"))
+            print(colored("=" * 75, "blue"))
             print(colored(">> Change Setting", "green"))
-            print(colored("=" * 50, "blue"))
+            print(colored("=" * 75, "blue"))
             
             self.printCurrentSetting()
 
-            print(colored("=" * 50, "blue"))
+            print(colored("=" * 75, "blue"))
             print(colored(">> Press", "blue") + colored(" esc ", "red") + colored("if you want to go back", "blue"))
             print(colored(">> Options:", "blue"))
             print(colored("  1. Change Osu! path", "white"))
             print(colored("  2. Change Output path", "white"))
             print(colored("  3. Change extract type value", "white"))
             print(colored("  4. Reset default options", "white"))
-            print(colored("=" * 50, "blue"))
+            print(colored("=" * 75, "blue"))
             print(colored(">> ", "yellow"), end="", flush=True)
             while True:
                 ch = ord(getch())
