@@ -6,7 +6,7 @@ import subprocess
 from time import sleep
 from sys import exit
 try:
-    from msvcrt import getch, getche
+    from msvcrt import getch
 except ImportError:
     def getch():
         import sys, tty, termios
@@ -17,10 +17,6 @@ except ImportError:
             ch = sys.stdin.read(1)
         finally:
             termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-        return ch
-    def getche():
-        ch = getch()
-        print(ch, end='')
         return ch
 
 def clearScreen():
@@ -491,7 +487,7 @@ class MainProgram:
                 if self.config['default_extract']['video']:
                     startfile(self.getOutputPath(self.config['output_path']['video'], "video"))
                 if self.config['default_extract']['custom']:
-                    startfile(self.config['output_path']['custom'], "custom")
+                    startfile(self.getOutputPath(self.config['output_path']['custom'], "custom"))
                 
                 print(colored("Opening output folder...", "green"))
                 sleep(1)

@@ -1,6 +1,5 @@
 # Internal
 import os
-from os import listdir
 from os.path import isfile, join
 import shutil
 # External
@@ -10,7 +9,7 @@ def getSubFolder(path):
     return [f.path for f in os.scandir(path) if f.is_dir()]
 
 def getAllItemsInFolder(path):
-    return [f for f in listdir(path) if isfile(join(path, f))]
+    return [f for f in os.listdir(path) if isfile(join(path, f))]
 
 def getFolderName(path):
     return path.split("\\")[-1]
