@@ -171,7 +171,7 @@ class MainProgram:
 
                 self.config["osu_path"] = path
                 jsonHandler.writeSetting(self.config)
-                print(colored(">> Successfully set ", "green") + colored(self.config["osu_path"], "yellow") + colored(" as the Osu! path!", "green"))
+                print(colored("\n>> Successfully set ", "green") + colored(self.config["osu_path"], "yellow") + colored(" as the Osu! path!", "green"))
                 print(colored("Press any key to continue...", "cyan"), end="", flush=True)
                 getch()
                 break
@@ -408,13 +408,24 @@ class MainProgram:
             # Added "" for display
             searchFor = ' named ' + colored(f'"{searchFor}"', "yellow")
 
+        # If no beatmaps found
+        if totals == 0:
+            print(colored("No beatmaps found!", "red"))
+            print(colored("Press any key to continue...", "cyan"), end="", flush=True)
+            getch()
+            if searchFor: self.extractCertainBeatmap()
+            return
+
         while insideMenu:
             clearScreen()
             print(colored("=" * 100, "blue"))
-            print(colored(">> Extract all beatmap", "green"))
+            print(colored(">> Extract all beatmap" if searchFor is None else f">> Extract beatmaps{searchFor}", "green"))
             print(colored("=" * 100, "blue"))
-            print(colored("Found ", "blue") + colored(str(totals), "yellow") + colored(" beatmaps", "blue") + searchFor if searchFor else "")
-            print(colored(">> Are you sure you want to extract all beatmaps with the current setting ", "blue") + colored("(Y/N)", "yellow") + colored(":", "blue"))
+            if searchFor:
+                print(colored("Found ", "blue") + colored(str(totals), "yellow") + colored(" beatmaps", "blue") + searchFor)
+            else:
+                print(colored("Found ", "blue") + colored(str(totals), "yellow") + colored(" beatmaps", "blue"))
+            print(colored(">> Are you sure you want to extract it with the current setting ", "blue") + colored("(Y/N)", "yellow") + colored(":", "blue"))
             print(colored(">> ", "yellow"), end="", flush=True)
 
             while True:
@@ -441,7 +452,7 @@ class MainProgram:
             print(colored(">> Extract all beatmap", "green"))
             print(colored("=" * 100, "blue"))
             print(colored(">> Press", "blue") + colored(' ctrl + c', 'red') + colored(" to stopped the process midway", "blue"))
-            print(colored("Extracting...", "green"))
+            print(colored("Extracting beatmaps" + searchFor + "..." if searchFor else "Extracting all beatmaps...", "green"))
 
             with tqdm(total=totals, colour="blue", ncols=100) as pbar:
                 for item in beatmapsPath:
@@ -536,9 +547,23 @@ class MainProgram:
             while True:
                 ch = ord(getch())
                 if ch == 49:
+                    # Check extract options, if all is disabled
+                    if not self.config['default_extract']['song'] and not self.config['default_extract']['img'] and not self.config['default_extract']['video'] and not self.config['default_extract']['custom']:
+                        print(colored("You need to atleast set 1 extract types in the setting!", "red"))
+                        print(colored(">> Press any key to continue...", "yellow"), end="", flush=True)
+                        getch()
+                        break
+
                     self.extractBeatmaps()
                     break
                 elif ch == 50:
+                    # Check extract options, if all is disabled
+                    if not self.config['default_extract']['song'] and not self.config['default_extract']['img'] and not self.config['default_extract']['video'] and not self.config['default_extract']['custom']:
+                        print(colored("You need to atleast set 1 extract types in the setting!", "red"))
+                        print(colored(">> Press any key to continue...", "yellow"), end="", flush=True)
+                        getch()
+                        break
+
                     self.extractCertainBeatmap()
                     break
                 elif ch == 51:
