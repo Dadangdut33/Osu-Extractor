@@ -133,9 +133,9 @@ class MainProgram:
     def changeOsuPath(self):
         while True:
             clearScreen()
-            print(colored("=" * 70, "blue"))
+            print(colored("=" * 100, "blue"))
             print(colored(">> Change Osu! path", "green"))
-            print(colored("=" * 70, "blue"))
+            print(colored("=" * 100, "blue"))
             print(colored(">> Press", "blue") + colored(' ctrl + c', 'red') + colored(" to cancel, press", "blue")  + colored(' enter ', 'yellow') + colored("to confirm", "blue"))
             print(colored(">> Input ", "blue") + colored("default", "yellow") + colored(" if you want to use the default path", "blue"))
             print(colored(">> Set:", "blue"))
@@ -186,16 +186,16 @@ class MainProgram:
         insideMenu = True
         while insideMenu:
             clearScreen()
-            print(colored("=" * 70, "blue"))
+            print(colored("=" * 100, "blue"))
             print(colored(">> Change output path", "green"))
-            print(colored("=" * 70, "blue"))
+            print(colored("=" * 100, "blue"))
             print(colored(">> Press", "blue") + colored(' esc ', 'red') + colored("if you want to go back", "blue"))
             print(colored(">> Set:", "blue"))
             print(colored(" 1. Song\t", "yellow") + self.colon + colored(self.getOutputPath(self.config["output_path"]['song'], "song"), "cyan"))
             print(colored(" 2. Img\t\t", "yellow") + self.colon + colored(self.getOutputPath(self.config["output_path"]['img'], "img"), "cyan"))
             print(colored(" 3. Video\t", "yellow") + self.colon + colored(self.getOutputPath(self.config["output_path"]['video'], "video"), "cyan"))
             print(colored(" 4. Custom\t", "yellow") + self.colon + colored(self.getOutputPath(self.config["output_path"]["custom"], "custom"), "cyan"))
-            print(colored("=" * 70, "blue"))
+            print(colored("=" * 100, "blue"))
             print(colored(">> ", "yellow"), end="", flush=True)
 
             while True:
@@ -216,9 +216,9 @@ class MainProgram:
         """
         while True:
             clearScreen()
-            print(colored("=" * 70, "blue"))
+            print(colored("=" * 100, "blue"))
             print(colored(f">> Change output path ({changeType})", "green"))
-            print(colored("=" * 70, "blue"))
+            print(colored("=" * 100, "blue"))
             print(colored(">> Press", "blue") + colored(' ctrl + c', 'red') + colored(" to cancel, press", "blue")  + colored(' enter ', 'yellow') + colored("to confirm", "blue"))
             print(colored(">> Input ", "blue") + colored("default", "yellow") + colored(" if you want to use the default path", "blue"))
             print(colored(">> Set:", "blue"))
@@ -247,9 +247,9 @@ class MainProgram:
         insideMenu = True
         while insideMenu:
             clearScreen()
-            print(colored("=" * 70, "blue"))
+            print(colored("=" * 100, "blue"))
             print(colored(">> Change extract type", "green"))
-            print(colored("=" * 70, "blue"))
+            print(colored("=" * 100, "blue"))
             print(colored(">> Press", "blue") + colored(" esc ", "red") + colored("if you want to go back", "blue"))
             print(colored(">> Enable/Disable:", "blue"))
             print(colored(f"    1. Mp3 (.mp3) (Y)", "green") if self.config['default_extract']['song'] else colored("    1. Mp3 (.mp3) (N)", "red"))
@@ -297,7 +297,7 @@ class MainProgram:
 
         while True:
             clearScreen()
-            print(colored("=" * 70, "blue"))
+            print(colored("=" * 100, "blue"))
             print(colored(">> Press", "blue") + colored(' esc ', 'red') + colored("to cancel, press", "blue")  + colored(' enter ', 'yellow') + colored("to confirm", "blue"))
             print(colored(">> Input the file format with dot and separated by space, ex: .mp3 .jpg", "green"))
             print(colored("   Set\t: ", "yellow"))
@@ -344,9 +344,9 @@ class MainProgram:
 
     def resetDefault(self):
         clearScreen()
-        print(colored("=" * 70, "blue"))
+        print(colored("=" * 100, "blue"))
         print(colored(">> Reset to default", "green"))
-        print(colored("=" * 70, "blue"))
+        print(colored("=" * 100, "blue"))
         print(colored(">> Are you sure you want to reset to default? (Y/N) ", "white"), end="", flush=True)
         while True:
             ch = ord(getch())
@@ -377,9 +377,9 @@ class MainProgram:
     def extractCertainBeatmap(self):        
         while True:
             clearScreen()
-            print(colored("=" * 70, "blue"))
+            print(colored("=" * 100, "blue"))
             print(colored(">> Extract certain beatmap", "green"))
-            print(colored("=" * 70, "blue"))
+            print(colored("=" * 100, "blue"))
             print(colored(">> Press", "blue") + colored(' ctrl + c', 'red') + colored(" to cancel and go back to extract menu", "blue"))
             
             try:
@@ -530,19 +530,19 @@ class MainProgram:
         # Extract the beatmap
         while insideMenu:
             clearScreen()
-            print(colored("=" * 75, "blue"))
+            print(colored("=" * 100, "blue"))
             print(colored(">> Extract Beatmap", "green"))
-            print(colored("=" * 75, "blue"))
+            print(colored("=" * 100, "blue"))
             
             self.printCurrentSetting()
 
-            print(colored("=" * 75, "blue"))
+            print(colored("=" * 100, "blue"))
             print(colored(">> Press", "blue") + colored(" esc ", "red") + colored("if you want to go back", "blue"))
             print(colored(">> Options:", "blue"))
             print(colored("  1. Extract All Beatmap", "white"))
             print(colored("  2. Extract Certain Beatmap", "white"))
             print(colored("  3. Change setting", "white"))
-            print(colored("=" * 75, "blue"))
+            print(colored("=" * 100, "blue"))
             print(colored(">> ", "yellow"), end="", flush=True)
             while True:
                 ch = ord(getch())
@@ -580,20 +580,20 @@ class MainProgram:
         # Change the setting
         while insideMenu:
             clearScreen()
-            print(colored("=" * 75, "blue"))
+            print(colored("=" * 100, "blue"))
             print(colored(">> Change Setting", "green"))
-            print(colored("=" * 75, "blue"))
+            print(colored("=" * 100, "blue"))
             
             self.printCurrentSetting()
 
-            print(colored("=" * 75, "blue"))
+            print(colored("=" * 100, "blue"))
             print(colored(">> Press", "blue") + colored(" esc ", "red") + colored("if you want to go back", "blue"))
             print(colored(">> Options:", "blue"))
             print(colored("  1. Change Osu! path", "white"))
             print(colored("  2. Change Output path", "white"))
             print(colored("  3. Change extract type value", "white"))
             print(colored("  4. Reset default options", "white"))
-            print(colored("=" * 75, "blue"))
+            print(colored("=" * 100, "blue"))
             print(colored(">> ", "yellow"), end="", flush=True)
             while True:
                 ch = ord(getch())
@@ -609,9 +609,9 @@ class MainProgram:
 
     def menuAbout(self):
         clearScreen()
-        print(colored("=" * 71, "blue"))
+        print(colored("=" * 100, "blue"))
         print(colored(">> About", "green"))
-        print(colored("=" * 71, "blue"))
+        print(colored("=" * 100, "blue"))
         print(colored("A simple Osu! Beatmap extractor. Can be use to extract songs, images,\nand videos from locally installed beatmaps. Made by Dadangdut33\n", "cyan"))
         
         print(colored("Disclaimer: ", "green"), end="") 
