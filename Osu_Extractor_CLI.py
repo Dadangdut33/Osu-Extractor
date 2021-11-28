@@ -2,6 +2,7 @@
 import os
 import sys
 import time
+import subprocess
 from time import sleep
 from sys import exit
 try:
@@ -35,6 +36,23 @@ from tqdm import tqdm
 
 # Local
 dir_path = os.path.dirname(os.path.realpath(__file__))
+
+# Global
+def startfile(filename):
+    """
+    Open a folder or file in the default application.
+    """
+    try:
+        os.startfile(filename)
+    except FileNotFoundError:
+        print("Cannot find the file specified.")
+    except Exception:
+        try:
+            subprocess.Popen(['xdg-open', filename])
+        except FileNotFoundError:
+            print("Cannot open the file specified.")
+        except Exception as e:
+            print("Error: " + str(e))
 
 # --------------------------------------------------
 class MainProgram:
@@ -359,7 +377,27 @@ class MainProgram:
         else:
             return path
 
-    def extractAllBeatmap(self):
+    def extractCertainBeatmap(self):        
+        while True:
+            clearScreen()
+            print(colored("=" * 70, "blue"))
+            print(colored(">> Extract certain beatmap", "green"))
+            print(colored("=" * 70, "blue"))
+            print(colored(">> Press", "blue") + colored(' ctrl + c', 'red') + colored(" to cancel and go back to extract menu", "blue"))
+            
+            try:
+                query = input(colored(">> Beatmap name: ", "yellow"))
+                
+                if query.strip() == "":
+                    continue
+                else:
+                    self.extractBeatmaps(query)
+                    break
+
+            except KeyboardInterrupt:
+                break
+
+    def extractBeatmaps(self, searchFor=None):
         continueExtract = False
         insideMenu = True
         # Get the beatmaps list
@@ -367,14 +405,19 @@ class MainProgram:
         beatmapsPath = getSubFolder(path)
         totals = len(beatmapsPath)
 
+        if searchFor:
+            beatmapsPath = [item for item in beatmapsPath if searchFor.lower() in item.lower()]
+            totals = len(beatmapsPath)
+            # Added "" for display
+            searchFor = ' named ' + colored(f'"{searchFor}"', "yellow")
+
         while insideMenu:
             clearScreen()
             print(colored("=" * 100, "blue"))
             print(colored(">> Extract all beatmap", "green"))
             print(colored("=" * 100, "blue"))
-            print(colored("Found ", "blue") + colored(str(totals), "yellow") + colored(" beatmaps", "blue"))
-            print(colored(">> Confirmation", "blue") + colored(" esc ", "red") + colored("if you want to go back", "blue"))
-            print(colored(">> Are you sure you want to extract all beatmaps with the current setting (Y/N):", "blue"))
+            print(colored("Found ", "blue") + colored(str(totals), "yellow") + colored(" beatmaps", "blue") + searchFor if searchFor else "")
+            print(colored(">> Are you sure you want to extract all beatmaps with the current setting ", "blue") + colored("(Y/N)", "yellow") + colored(":", "blue"))
             print(colored(">> ", "yellow"), end="", flush=True)
 
             while True:
@@ -415,7 +458,7 @@ class MainProgram:
                         extractFiles(item, theFile, ".avi", self.getOutputPath(self.config['output_path']['video'], "video"), getFolderName(item))
                     if self.config['default_extract']['custom']:
                         for custom in self.config['default_extract']['custom_list']:
-                            extractFiles(item, theFile, custom, self.getOutputPath("default", "custom"), getFolderName(item))
+                            extractFiles(item, theFile, custom, self.getOutputPath(self.config['output_path']['custom'], "custom"), getFolderName(item))
 
                     pbar.update(1)
                     totalExtracted += 1
@@ -433,8 +476,27 @@ class MainProgram:
         print(colored(">> Successfully extracted ", "green") + colored(str(totalExtracted), "yellow") + colored(" beatmaps", "green"))
         # Print total time taken
         print(colored(">> Total time taken: ", "green") + colored(str(round(endTime - startTime, 2)), "yellow") + colored(" seconds", "green"))
-        print(colored(">> Press any key to continue...", "cyan"), end="", flush=True)
-        getch()
+
+        # Ask if user want to open the output folder or not
+        print(colored(">> Do you want to open the output folder? (Y/N)", "blue"))
+        print(colored(">> ", "yellow"), end="", flush=True)
+        while True:
+            ch = ord(getch())
+            if ch == 89 or ch == 121: # Y
+                if self.config['default_extract']['song']:
+                    startfile(self.getOutputPath(self.config['output_path']['song'], "song"))
+                if self.config['default_extract']['img']:
+                    startfile(self.getOutputPath(self.config['output_path']['img'], "img"))
+                if self.config['default_extract']['video']:
+                    startfile(self.getOutputPath(self.config['output_path']['video'], "video"))
+                if self.config['default_extract']['custom']:
+                    startfile(self.config['output_path']['custom'], "custom")
+                
+                print(colored("Opening output folder...", "green"))
+                sleep(1)
+                break
+            elif ch == 78 or ch == 110: # N
+                break
 
     def printCurrentSetting(self):
         print(colored(">> Current settings", "green"))
@@ -477,7 +539,7 @@ class MainProgram:
             while True:
                 ch = ord(getch())
                 if ch == 49:
-                    self.extractAllBeatmap()
+                    self.extractBeatmaps()
                     break
                 elif ch == 50:
                     self.extractCertainBeatmap()
@@ -525,23 +587,64 @@ class MainProgram:
 
     def menuAbout(self):
         clearScreen()
-        print(colored("=" * 70, "blue"))
+        print(colored("=" * 71, "blue"))
         print(colored(">> About", "green"))
-        print(colored("=" * 70, "blue"))
+        print(colored("=" * 71, "blue"))
         print(colored("A simple Osu! Beatmap extractor. Can be use to extract songs, images,\nand videos from locally installed beatmaps. Made by Dadangdut33\n", "cyan"))
         
         print(colored("Disclaimer: ", "green"), end="") 
         print(colored("""
         \rI do not gain any money from this tool. I do not intend to support
-        \rpiracy of any kind. This tool is only made to help extracting song/
-        \rimg/videos from a beatmap. You should support the creators of each
-        \rsong/images/videos you extract. I recommend tools such as saucenao
-        \rand tineye to find the original image and author. You should also 
-        \rsupport the original music artist by buying their songs/albums or
-        \rby listening their song on official platform.
+        \rpiracy of any kind. This tool is only made to help extracting (copying)
+        \rsong/img/videos from a beatmap. You should support the creators of each
+        \rsong/img/videos you extract. I recommend tools such as saucenao and
+        \rtineye to find the original image and author. You should also support
+        \rthe original music artist by buying their songs/albums or by listening
+        \rtheir song on official platform.
         """, "white"))
         print(colored("Press any key to go back...", "blue"), end="", flush=True)
         getch()
+
+    def openOutputFolder(self):
+        clearScreen()
+        print(colored("=" * 50, "blue"))
+        print(colored(">> Open Output Folder", "green"))
+        print(colored("=" * 50, "blue"))
+        print(colored(">> Choose which output folder that you want to open", "green"))
+        print(colored(">> Press", "blue") + colored(' esc ', 'red') + colored("if you want to go back", "blue"))
+        print(colored(">> Options:", "blue"))
+        print(colored("  1. Song folder", "white"))
+        print(colored("  2. Image folder", "white"))
+        print(colored("  3. Video folder", "white"))
+        print(colored("  4. Custom folder", "white"))
+        print(colored("=" * 50, "blue"))
+        print(colored(">> ", "yellow"), end="", flush=True)
+        while True:
+            ch = ord(getch())
+            if ch == 49:
+                startfile(self.getOutputPath(self.config['output_path']['song'], "song"))
+                print(colored("Opening song folder...", "green"))
+                sleep(1)
+                break
+            elif ch == 50:
+                startfile(self.getOutputPath(self.config['output_path']['img'], "img"))
+                print(colored("Opening image folder...", "green"))
+                sleep(1)
+                break
+            elif ch == 51:
+                startfile(self.getOutputPath(self.config['output_path']['video'], "video"))
+                print(colored("Opening video folder...", "green"))
+                sleep(1)
+                break
+            elif ch == 52:
+                startfile(self.getOutputPath(self.config['output_path']['custom'], "custom"))
+                print(colored("Opening custom folder...", "green"))
+                sleep(1)
+                break
+            elif ch == 27:
+                break
+            else:
+                continue
         
 if __name__ == "__main__":
     main = MainProgram()
@@ -556,7 +659,8 @@ if __name__ == "__main__":
         print(colored("  1. Extract"))
         print(colored("  2. Setting"))
         print(colored("  3. About"))
-        print(colored("  4. Exit"))
+        print(colored("  4. Open output folder"))
+        print(colored("  5. Exit"))
         print(colored("=" * 50, "blue"))
         print(colored(">> ", "yellow"), end="", flush=True)
         while True:
@@ -571,6 +675,9 @@ if __name__ == "__main__":
                 main.menuAbout()
                 break
             elif ch == 52:
+                main.openOutputFolder()
+                break
+            elif ch == 53:
                 print(colored("Thanks for using this program!", "green"))
                 sleep(1)
                 clearScreen()
