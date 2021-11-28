@@ -24,7 +24,7 @@ def clearScreen():
 
 # User lib
 from osu_extractor.GetData import getSubFolder, getAllItemsInFolder, getFolderName, extractFiles, createPathIfNotExist, keepCertainListByKeyword
-from osu_extractor.Public import jsonHandler
+from osu_extractor.Public import jsonHandler, version
 
 # External
 from termcolor import colored
@@ -678,7 +678,7 @@ if __name__ == "__main__":
     while running:
         clearScreen()
         print(colored("=" * 50, "blue"))
-        print(colored(">> Osu! Beatmap Extractor", "green"))
+        print(colored(f">> Osu! Beatmap Extractor V{version}", "green"))
         print(colored("=" * 50, "blue"))
         print(colored(">> Options", "blue"))
         print(colored("  1. Extract"))
