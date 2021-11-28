@@ -28,5 +28,4 @@ def createPathIfNotExist(path):
         os.makedirs(path)
 
 def keepCertainListByKeyword(list, keyWord):
-    keyWord = keyWord.lower() # Case insensitive
-    return [item for item in list if keyWord in item.lower()]
+    return [item for item in list if keyWord.lower() in item.lower()]

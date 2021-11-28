@@ -42,6 +42,7 @@ def startfile(filename):
     """
     Open a folder or file in the default application.
     """
+    createPathIfNotExist(filename)
     try:
         os.startfile(filename)
     except FileNotFoundError:
@@ -406,7 +407,7 @@ class MainProgram:
         totals = len(beatmapsPath)
 
         if searchFor:
-            beatmapsPath = [item for item in beatmapsPath if searchFor.lower() in item.lower()]
+            beatmapsPath = keepCertainListByKeyword(beatmapsPath, searchFor)
             totals = len(beatmapsPath)
             # Added "" for display
             searchFor = ' named ' + colored(f'"{searchFor}"', "yellow")
@@ -606,45 +607,48 @@ class MainProgram:
         getch()
 
     def openOutputFolder(self):
-        clearScreen()
-        print(colored("=" * 50, "blue"))
-        print(colored(">> Open Output Folder", "green"))
-        print(colored("=" * 50, "blue"))
-        print(colored(">> Choose which output folder that you want to open", "green"))
-        print(colored(">> Press", "blue") + colored(' esc ', 'red') + colored("if you want to go back", "blue"))
-        print(colored(">> Options:", "blue"))
-        print(colored("  1. Song folder", "white"))
-        print(colored("  2. Image folder", "white"))
-        print(colored("  3. Video folder", "white"))
-        print(colored("  4. Custom folder", "white"))
-        print(colored("=" * 50, "blue"))
-        print(colored(">> ", "yellow"), end="", flush=True)
-        while True:
-            ch = ord(getch())
-            if ch == 49:
-                startfile(self.getOutputPath(self.config['output_path']['song'], "song"))
-                print(colored("Opening song folder...", "green"))
-                sleep(1)
-                break
-            elif ch == 50:
-                startfile(self.getOutputPath(self.config['output_path']['img'], "img"))
-                print(colored("Opening image folder...", "green"))
-                sleep(1)
-                break
-            elif ch == 51:
-                startfile(self.getOutputPath(self.config['output_path']['video'], "video"))
-                print(colored("Opening video folder...", "green"))
-                sleep(1)
-                break
-            elif ch == 52:
-                startfile(self.getOutputPath(self.config['output_path']['custom'], "custom"))
-                print(colored("Opening custom folder...", "green"))
-                sleep(1)
-                break
-            elif ch == 27:
-                break
-            else:
-                continue
+        insideMenu = True
+        while insideMenu:
+            clearScreen()
+            print(colored("=" * 51, "blue"))
+            print(colored(">> Open Output Folder", "green"))
+            print(colored("=" * 51, "blue"))
+            print(colored(">> Choose which output folder that you want to open", "green"))
+            print(colored(">> Press", "blue") + colored(' esc ', 'red') + colored("if you want to go back", "blue"))
+            print(colored(">> Options:", "blue"))
+            print(colored("  1. Song folder", "white"))
+            print(colored("  2. Image folder", "white"))
+            print(colored("  3. Video folder", "white"))
+            print(colored("  4. Custom folder", "white"))
+            print(colored("=" * 51, "blue"))
+            print(colored(">> ", "yellow"), end="", flush=True)
+            while True:
+                ch = ord(getch())
+                if ch == 49:
+                    startfile(self.getOutputPath(self.config['output_path']['song'], "song"))
+                    print(colored("Opening song folder...", "green"))
+                    sleep(0.5)
+                    break
+                elif ch == 50:
+                    startfile(self.getOutputPath(self.config['output_path']['img'], "img"))
+                    print(colored("Opening image folder...", "green"))
+                    sleep(0.5)
+                    break
+                elif ch == 51:
+                    startfile(self.getOutputPath(self.config['output_path']['video'], "video"))
+                    print(colored("Opening video folder...", "green"))
+                    sleep(0.5)
+                    break
+                elif ch == 52:
+                    startfile(self.getOutputPath(self.config['output_path']['custom'], "custom"))
+                    print(colored("Opening custom folder...", "green"))
+                    sleep(0.5)
+                    break
+                elif ch == 27:
+                    insideMenu = False
+                    break
+                else:
+                    continue
         
 if __name__ == "__main__":
     main = MainProgram()
