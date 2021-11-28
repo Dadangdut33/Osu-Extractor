@@ -32,7 +32,7 @@ Extract/copy song, images, videos, and more from installed Osu beatmaps. Made us
   <summary>Preview</summary>
   <p align="center">
   <img src="https://media.discordapp.net/attachments/653206818759376916/914395805840998460/unknown.png" width="700" alt="Main Menu">
-  <img src="https://media.discordapp.net/attachments/653206818759376916/914409434187456522/unknown.png" width="700" alt="Extract Menu">
+  <img src="https://media.discordapp.net/attachments/653206818759376916/914409434187456522/unknown.png" width="700" alt="Extract Menu"><br>
   <b>You can use the new windows terminal to run the program with better look</b>
   <img src="https://media.discordapp.net/attachments/653206818759376916/914409496158298122/unknown.png" width="700" alt="Extract Menu - Via Windows terminal">
   <img src="https://media.discordapp.net/attachments/653206818759376916/914399313243832340/unknown.png" width="700" alt="Extract All - Via Windows terminal">
@@ -49,7 +49,7 @@ Extract/copy song, images, videos, and more from installed Osu beatmaps. Made us
   </details>
 
 # Downloads
-- [OsuExtractor CLI]()
+- [OsuExtractor CLI](https://github.com/Dadangdut33/Osu-Extractor/releases/tag/V1.0_CLI)
 - [OsuExtractor GUI]()
 
 # How To Install
