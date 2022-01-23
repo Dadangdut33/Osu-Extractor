@@ -283,9 +283,10 @@ class Main:
         self.entry_Filter.pack(side=LEFT, padx=(0, 5), pady=5, fill=X, expand=False)
 
         # Btn
-        # Load, extract all, extract filtered, extract selected
+        # Load, extract all, extract selected, clear all, clear selected
         self.btn_Load = ttk.Button(self.frame_2_row_2, text="Load Maps", command=lambda: self.loadMaps())
         self.btn_Load.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.btn_Load, "Load beatmaps data into table")
 
         self.btn_ExtractAll = ttk.Button(self.frame_2_row_2, text="Extract All", command=lambda: self.extractAll())
         self.btn_ExtractAll.pack(side=LEFT, padx=5, pady=5)
@@ -294,6 +295,14 @@ class Main:
         self.btn_ExtractSelected = ttk.Button(self.frame_2_row_2, text="Extract Selected", command=lambda: self.extractSelected())
         self.btn_ExtractSelected.pack(side=LEFT, padx=5, pady=5)
         CreateToolTip(self.btn_ExtractSelected, "Extract currently selected beatmaps")
+
+        self.btn_ClearAll = ttk.Button(self.frame_2_row_2, text="Clear All", command=lambda: self.clearAll())
+        self.btn_ClearAll.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.btn_ClearAll, "Clear table")
+
+        self.btn_ClearSelected = ttk.Button(self.frame_2_row_2, text="Clear Selected", command=lambda: self.clearSelected())
+        self.btn_ClearSelected.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.btn_ClearSelected, "Delete currently selected beatmaps from the table")
 
         # Table for map list
         self.scrollbarY = Scrollbar(self.frame_2_row_3, orient=VERTICAL)
@@ -323,6 +332,31 @@ class Main:
         # loadbar
         self.loadbar = ttk.Progressbar(self.frame_3_row_1, orient=HORIZONTAL, length=200, mode="determinate")
         self.loadbar.pack(side=TOP, fill=BOTH, expand=True)
+
+    def clearAll(self):
+        # Ask confirmation first
+        if messagebox.askokcancel("Clear All", "Are you sure you want to clear all loaded beatmaps?"):
+            self.table_MapList.delete(*self.table_MapList.get_children())
+
+            # Update label
+            self.label_MapCount.config(text="Beatmaps loaded: 0")
+            self.label_Processed.config(text="Processed: 0")
+
+    def clearSelected(self):
+        if len(self.table_MapList.selection()) > 0:
+            for item in self.table_MapList.selection():
+                self.table_MapList.delete(item)
+
+            # Update label
+            self.label_MapCount.config(text="Beatmaps loaded: {}".format(len(self.table_MapList.get_children())))
+
+    def extractSelected(self):
+        # Check if there is any selected
+        if len(self.table_MapList.selection()) > 0:
+            # Get the data of selected
+            selected = self.table_MapList.selection()
+            selectedData = self.table_MapList.item(selected)
+            print(selectedData)
 
     def loadMaps(self):
         # load maps
@@ -374,20 +408,24 @@ class Main:
         self.menubar.entryconfig(1, state="disabled")
         self.menubar.entryconfig(2, state="disabled")
         self.menubar.entryconfig(3, state="disabled")
-        self.browse_OsuPath.config(state=DISABLED)
-        self.btn_Load.config(state=DISABLED)
-        self.btn_ExtractAll.config(state=DISABLED)
-        self.btn_ExtractSelected.config(state=DISABLED)
-        self.btn_Save.config(state=DISABLED)
-        self.btn_Cancel.config(state=DISABLED)
-        self.btn_SetDefault.config(state=DISABLED)
-        self.entryExtractSong.config(state=DISABLED)
+        for child in self.frame_1_row_1.winfo_children():
+            child.configure(state=DISABLED)
+
+        for child in self.frame_1_row_2.winfo_children():
+            child.configure(state=DISABLED)
+
+        for child in self.frame_1_row_3.winfo_children():
+            child.configure(state=DISABLED)
+
+        for child in self.frame_1_row_5.winfo_children():
+            child.configure(state=DISABLED)
+
+        for child in self.frame_2_row_2.winfo_children():
+            child.configure(state=DISABLED)
+
         self.entryExtractSong.bind("<Button-3>", lambda event: None)
-        self.entryExtractImage.config(state=DISABLED)
         self.entryExtractImage.bind("<Button-3>", lambda event: None)
-        self.entryExtractVideo.config(state=DISABLED)
         self.entryExtractVideo.bind("<Button-3>", lambda event: None)
-        self.entryExtractCustom.config(state=DISABLED)
         self.entryExtractCustom.bind("<Button-3>", lambda event: None)
 
     def enableWidgets(self):
@@ -396,26 +434,25 @@ class Main:
         self.menubar.entryconfig(1, state=NORMAL)
         self.menubar.entryconfig(2, state=NORMAL)
         self.menubar.entryconfig(3, state=NORMAL)
-        self.browse_OsuPath.config(state=NORMAL)
-        self.btn_Load.config(state=NORMAL)
-        self.btn_ExtractAll.config(state=NORMAL)
-        self.btn_ExtractSelected.config(state=NORMAL)
-        self.btn_Save.config(state=NORMAL)
-        self.btn_Cancel.config(state=NORMAL)
-        self.btn_SetDefault.config(state=NORMAL)
-        self.entryExtractSong.config(state=NORMAL)
-        self.entryExtractSong.bind("<Button-3>", lambda event: self.browseOutputPath("song", self.entryExtractSong))
-        self.entryExtractImage.config(state=NORMAL)
-        self.entryExtractImage.bind("<Button-3>", lambda event: self.browseOutputPath("img", self.entryExtractImage))
-        self.entryExtractVideo.config(state=NORMAL)
-        self.entryExtractVideo.bind("<Button-3>", lambda event: self.browseOutputPath("video", self.entryExtractVideo))
-        self.entryExtractCustom.config(state=NORMAL)
-        self.entryExtractCustom.bind("<Button-3>", lambda event: self.browseOutputPath("custom", self.entryExtractCustom))
+        for child in self.frame_1_row_1.winfo_children():
+            child.configure(state=NORMAL)
 
-    def extractSelected(self):
-        # Check if there is any selected
-        if len(self.table_MapList.selection()) > 0:
-            print(self.table_MapList.selection())
+        for child in self.frame_1_row_2.winfo_children():
+            child.configure(state=NORMAL)
+
+        for child in self.frame_1_row_3.winfo_children():
+            child.configure(state=NORMAL)
+
+        for child in self.frame_1_row_5.winfo_children():
+            child.configure(state=NORMAL)
+
+        for child in self.frame_2_row_2.winfo_children():
+            child.configure(state=NORMAL)
+
+        self.entryExtractSong.bind("<Button-3>", lambda event: self.browseOutputPath("song", self.entryExtractSong))
+        self.entryExtractImage.bind("<Button-3>", lambda event: self.browseOutputPath("img", self.entryExtractImage))
+        self.entryExtractVideo.bind("<Button-3>", lambda event: self.browseOutputPath("video", self.entryExtractVideo))
+        self.entryExtractCustom.bind("<Button-3>", lambda event: self.browseOutputPath("custom", self.entryExtractCustom))
 
     def handle_click(self, event):
         if self.table_MapList.identify_region(event.x, event.y) == "separator":
