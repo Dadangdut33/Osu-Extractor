@@ -255,12 +255,15 @@ class Main:
         # Save, cancel, set default btn
         self.btn_Save = ttk.Button(self.frame_1_row_5, text="Save", command=lambda: self.saveConfig())
         self.btn_Save.pack(side=RIGHT, padx=5, pady=5)
+        CreateToolTip(self.btn_Save, "Save current settings so they can be loaded next time")
 
         self.btn_Cancel = ttk.Button(self.frame_1_row_5, text="Cancel", command=lambda: self.cancelConfig())
         self.btn_Cancel.pack(side=RIGHT, padx=5, pady=5)
+        CreateToolTip(self.btn_Cancel, "Cancel any changes and reset to currently saved settings")
 
         self.btn_SetDefault = ttk.Button(self.frame_1_row_5, text="Set Default", command=lambda: self.setDefaultConfig())
         self.btn_SetDefault.pack(side=RIGHT, padx=5, pady=5)
+        CreateToolTip(self.btn_SetDefault, "Reset to default settings")
 
         self.initConfig()
 
@@ -277,10 +280,12 @@ class Main:
         # filter label
         self.label_Filter = Label(self.frame_2_row_2, text="Filter:")
         self.label_Filter.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.label_Filter, "Filter beatmaps by folder/beatmap name")
 
         self.varEntryFilter = StringVar()
         self.entry_Filter = ttk.Entry(self.frame_2_row_2, textvariable=self.varEntryFilter, width=30)
         self.entry_Filter.pack(side=LEFT, padx=(0, 5), pady=5, fill=X, expand=False)
+        CreateToolTip(self.entry_Filter, "Filter beatmaps by folder/beatmap name")
 
         # Btn
         # Load, extract all, extract selected, clear all, clear selected
@@ -353,10 +358,35 @@ class Main:
     def extractSelected(self):
         # Check if there is any selected
         if len(self.table_MapList.selection()) > 0:
-            # Get the data of selected
-            selected = self.table_MapList.selection()
-            selectedData = self.table_MapList.item(selected)
-            print(selectedData)
+            # Ask confirmation first
+            if messagebox.askokcancel("Extract Selected", "Are you sure you want to extract currently selected beatmaps with the current configuration?"):
+                # Get the data of selected in table
+                selected_data = [self.table_MapList.item(item)["values"] for item in self.table_MapList.selection()]
+                counter = 0
+                for item in selected_data:
+                    item = f"{self.entry_OsuPath.get()}\\songs\\{item[1]}"
+                    theFile = getAllItemsInFolder(item)
+
+                    counter += 1
+                    # Check extract type
+                    if self.varExtractSong.get():
+                        extractFiles(item, theFile, ".mp3", self.getOutputPath(self.config["output_path"]["song"], "song"), getFolderName(item))
+                    if self.varExtractImage.get():
+                        extractFiles(item, theFile, ".jpg", self.getOutputPath(self.config["output_path"]["img"], "img"), getFolderName(item))
+                    if self.varExtractVideo.get():
+                        extractFiles(item, theFile, ".avi", self.getOutputPath(self.config["output_path"]["video"], "video"), getFolderName(item))
+                    if self.varExtractCustom.get():
+                        for custom in self.config["default_extract"]["custom_list"]:
+                            extractFiles(item, theFile, custom, self.getOutputPath(self.config["output_path"]["custom"], "custom"), getFolderName(item))
+
+                for item in self.table_MapList.selection():
+                    self.table_MapList.delete(item)
+
+                # # Update label
+                self.label_Processed.config(text="Processed: {}".format(counter))
+
+                # Show mbox success
+                messagebox.showinfo("Extract Selected Success", "Successfully extracted {} selected beatmaps".format(counter))
 
     def loadMaps(self):
         # load maps
