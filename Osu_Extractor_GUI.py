@@ -171,7 +171,7 @@ class Main:
 
         # 2
         self.frame_2 = LabelFrame(self.root, text="Output", padx=5, pady=5, font="TkDefaultFont 10 bold")
-        self.frame_2.pack(side=TOP, fill=X, expand=False, padx=5, pady=5)
+        self.frame_2.pack(side=TOP, fill=BOTH, expand=TRUE, padx=5, pady=5)
 
         self.frame_2_row_1 = Frame(self.frame_2)
         self.frame_2_row_1.pack(side=TOP, fill=X, expand=False)
@@ -179,9 +179,12 @@ class Main:
         self.frame_2_row_2 = Frame(self.frame_2)
         self.frame_2_row_2.pack(side=TOP, fill=X, expand=False)
 
+        self.frame_2_row_3 = Frame(self.frame_2)  # TABLE
+        self.frame_2_row_3.pack(side=TOP, fill=BOTH, expand=TRUE)
+
         # 3
         self.frame_3 = Frame(self.root)
-        self.frame_3.pack(side=TOP, fill=X, expand=False, padx=5, pady=5)
+        self.frame_3.pack(side=BOTTOM, fill=X, expand=False, padx=5, pady=5)
 
         self.frame_3_row_1 = Frame(self.frame_3)
         self.frame_3_row_1.pack(side=TOP, fill=X, expand=False)
@@ -259,6 +262,35 @@ class Main:
         self.btn_SetDefault.pack(side=RIGHT, padx=5, pady=5)
 
         self.initConfig()
+
+        # 2
+        # Label for map count
+        self.label_MapCount = Label(self.frame_2_row_1, text="Beatmaps loaded: 0")
+        self.label_MapCount.pack(side=LEFT, padx=5, pady=5)
+
+        # label processed
+        self.label_Processed = Label(self.frame_2_row_1, text="Processed: 0")
+        self.label_Processed.pack(side=LEFT, padx=5, pady=5)
+
+        # Btn
+        # Load, extract all, extract selected
+        self.btn_Load = ttk.Button(self.frame_2_row_2, text="Load", command=lambda: self.loadMaps())
+        self.btn_Load.pack(side=LEFT, padx=5, pady=5)
+
+        self.btn_ExtractAll = ttk.Button(self.frame_2_row_2, text="Extract All", command=lambda: self.extractAll())
+        self.btn_ExtractAll.pack(side=LEFT, padx=5, pady=5)
+
+        self.btn_ExtractSelected = ttk.Button(self.frame_2_row_2, text="Extract Selected", command=lambda: self.extractSelected())
+        self.btn_ExtractSelected.pack(side=LEFT, padx=5, pady=5)
+
+        # Table for map list
+        self.table_MapList = ttk.Treeview(self.frame_2_row_3, height=10, selectmode="extended")
+        self.table_MapList.pack(side=LEFT, padx=5, pady=5, fill=BOTH, expand=True)
+
+        # 3
+        # loadbar
+        self.loadbar = ttk.Progressbar(self.frame_3_row_1, orient=HORIZONTAL, length=200, mode="determinate")
+        self.loadbar.pack(side=TOP, fill=BOTH, expand=True)
 
     def toggleExtractCustom(self):
         print(self.varExtractSong.get())
