@@ -2,6 +2,7 @@
 import os
 import subprocess
 from sys import exit
+import threading
 from tkinter import *
 from tkinter import filedialog
 from tkinter import messagebox
@@ -9,7 +10,7 @@ import tkinter.ttk as ttk
 import webbrowser
 
 # User lib
-from osu_extractor.GetData import getSubFolder, getAllItemsInFolder, getFolderName, extractFiles, createPathIfNotExist, keepCertainListByKeyword
+from osu_extractor.GetData import getSubFolder, getAllItemsInFolder, getFolderName, extractFiles, createPathIfNotExist, keepCertainListByKeyword, getFileTypeListInFolder
 from osu_extractor.Public import jsonHandler, version
 
 # Local
@@ -28,14 +29,14 @@ def startfile(filename):
     try:
         os.startfile(filename)
     except FileNotFoundError:
-        print("Cannot find the file specified.")
+        messagebox.showerror("Error", "Cannot find the file specified.")
     except Exception:
         try:
             subprocess.Popen(["xdg-open", filename])
         except FileNotFoundError:
-            print("Cannot open the file specified.")
+            messagebox.showerror("Error", "Cannot find the file specified.")
         except Exception as e:
-            print("Error: " + str(e))
+            messagebox.showerror("Error", str(e))
 
 
 class CreateToolTip(object):
@@ -272,31 +273,155 @@ class Main:
         self.label_Processed = Label(self.frame_2_row_1, text="Processed: 0")
         self.label_Processed.pack(side=LEFT, padx=5, pady=5)
 
+        # entry for filter
+        # filter label
+        self.label_Filter = Label(self.frame_2_row_2, text="Filter:")
+        self.label_Filter.pack(side=LEFT, padx=5, pady=5)
+
+        self.varEntryFilter = StringVar()
+        self.entry_Filter = ttk.Entry(self.frame_2_row_2, textvariable=self.varEntryFilter, width=30)
+        self.entry_Filter.pack(side=LEFT, padx=(0, 5), pady=5, fill=X, expand=False)
+
         # Btn
-        # Load, extract all, extract selected
-        self.btn_Load = ttk.Button(self.frame_2_row_2, text="Load", command=lambda: self.loadMaps())
+        # Load, extract all, extract filtered, extract selected
+        self.btn_Load = ttk.Button(self.frame_2_row_2, text="Load Maps", command=lambda: self.loadMaps())
         self.btn_Load.pack(side=LEFT, padx=5, pady=5)
 
         self.btn_ExtractAll = ttk.Button(self.frame_2_row_2, text="Extract All", command=lambda: self.extractAll())
         self.btn_ExtractAll.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.btn_ExtractAll, "Extract all loaded beatmaps")
 
         self.btn_ExtractSelected = ttk.Button(self.frame_2_row_2, text="Extract Selected", command=lambda: self.extractSelected())
         self.btn_ExtractSelected.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.btn_ExtractSelected, "Extract currently selected beatmaps")
 
         # Table for map list
-        self.table_MapList = ttk.Treeview(self.frame_2_row_3, height=10, selectmode="extended")
+        self.scrollbarY = Scrollbar(self.frame_2_row_3, orient=VERTICAL)
+        self.scrollbarY.pack(side=RIGHT, fill=Y)
+        # self.scrollbarX = Scrollbar(self.frame_2_row_3, orient=HORIZONTAL)
+        # self.scrollbarX.pack(side=BOTTOM, fill=X)
+
+        self.table_MapList = ttk.Treeview(self.frame_2_row_3, height=10, selectmode="extended", columns=("#", "Name", "Path"))
         self.table_MapList.pack(side=LEFT, padx=5, pady=5, fill=BOTH, expand=True)
+
+        self.table_MapList.heading("#0", text="", anchor=CENTER)
+        self.table_MapList.heading("#1", text="#", anchor=CENTER)
+        self.table_MapList.heading("#2", text="Name", anchor=CENTER)
+        self.table_MapList.heading("#3", text="Available Extension", anchor=CENTER)
+
+        self.table_MapList.column("#0", width=0, stretch=False)
+        self.table_MapList.column("#1", width=50, stretch=False)
+        self.table_MapList.column("#2", width=300, stretch=True)
+        self.table_MapList.column("#3", width=200, stretch=False)
+
+        # self.scrollbarX.config(command=self.table_MapList.xview)
+        self.scrollbarY.config(command=self.table_MapList.yview)
+        self.table_MapList.config(yscrollcommand=self.scrollbarY.set)
+        self.table_MapList.bind("<Button-1>", self.handle_click)
 
         # 3
         # loadbar
         self.loadbar = ttk.Progressbar(self.frame_3_row_1, orient=HORIZONTAL, length=200, mode="determinate")
         self.loadbar.pack(side=TOP, fill=BOTH, expand=True)
 
+    def loadMaps(self):
+        # load maps
+        path = f"{self.config['osu_path']}\Songs"
+        beatmapsPath = getSubFolder(path)
+
+        # check filter
+        filter = self.varEntryFilter.get().strip()
+        if len(filter) > 0:
+            beatmapsPath = keepCertainListByKeyword(beatmapsPath, filter)
+
+        totals = len(beatmapsPath)
+        self.loadbar.config(maximum=totals)
+
+        self.label_MapCount.config(text=f"Beatmaps loaded: {totals}")
+
+        # clear table
+        self.table_MapList.delete(*self.table_MapList.get_children())
+
+        self.disableWidgets()
+
+        # Update val
+        updateVal = 100
+        if totals > 100:
+            updateVal = 100
+        if totals > 300:
+            updateVal = 300
+        if totals > 1500:
+            updateVal = 500
+
+        # load table
+        for i, beatmap in enumerate(beatmapsPath):
+            self.table_MapList.insert("", "end", text=beatmap, values=(i + 1, getFolderName(beatmap), getFileTypeListInFolder(beatmap)))
+            # update loadbar
+            self.loadbar["value"] = i + 1
+
+            # Update root
+            if i % updateVal == 0:
+                self.root.update()
+
+        # Set loadbar value to 0
+        self.loadbar.config(value=0)
+
+        self.enableWidgets()
+
+    def disableWidgets(self):
+        # Disable some widgets
+        self.scrollbarY.pack_forget()
+        self.menubar.entryconfig(1, state="disabled")
+        self.menubar.entryconfig(2, state="disabled")
+        self.menubar.entryconfig(3, state="disabled")
+        self.browse_OsuPath.config(state=DISABLED)
+        self.btn_Load.config(state=DISABLED)
+        self.btn_ExtractAll.config(state=DISABLED)
+        self.btn_ExtractSelected.config(state=DISABLED)
+        self.btn_Save.config(state=DISABLED)
+        self.btn_Cancel.config(state=DISABLED)
+        self.btn_SetDefault.config(state=DISABLED)
+        self.entryExtractSong.config(state=DISABLED)
+        self.entryExtractSong.bind("<Button-3>", lambda event: None)
+        self.entryExtractImage.config(state=DISABLED)
+        self.entryExtractImage.bind("<Button-3>", lambda event: None)
+        self.entryExtractVideo.config(state=DISABLED)
+        self.entryExtractVideo.bind("<Button-3>", lambda event: None)
+        self.entryExtractCustom.config(state=DISABLED)
+        self.entryExtractCustom.bind("<Button-3>", lambda event: None)
+
+    def enableWidgets(self):
+        # Enable again
+        self.scrollbarY.pack(side=RIGHT, fill=Y)
+        self.menubar.entryconfig(1, state=NORMAL)
+        self.menubar.entryconfig(2, state=NORMAL)
+        self.menubar.entryconfig(3, state=NORMAL)
+        self.browse_OsuPath.config(state=NORMAL)
+        self.btn_Load.config(state=NORMAL)
+        self.btn_ExtractAll.config(state=NORMAL)
+        self.btn_ExtractSelected.config(state=NORMAL)
+        self.btn_Save.config(state=NORMAL)
+        self.btn_Cancel.config(state=NORMAL)
+        self.btn_SetDefault.config(state=NORMAL)
+        self.entryExtractSong.config(state=NORMAL)
+        self.entryExtractSong.bind("<Button-3>", lambda event: self.browseOutputPath("song", self.entryExtractSong))
+        self.entryExtractImage.config(state=NORMAL)
+        self.entryExtractImage.bind("<Button-3>", lambda event: self.browseOutputPath("img", self.entryExtractImage))
+        self.entryExtractVideo.config(state=NORMAL)
+        self.entryExtractVideo.bind("<Button-3>", lambda event: self.browseOutputPath("video", self.entryExtractVideo))
+        self.entryExtractCustom.config(state=NORMAL)
+        self.entryExtractCustom.bind("<Button-3>", lambda event: self.browseOutputPath("custom", self.entryExtractCustom))
+
+    def extractSelected(self):
+        # Check if there is any selected
+        if len(self.table_MapList.selection()) > 0:
+            print(self.table_MapList.selection())
+
+    def handle_click(self, event):
+        if self.table_MapList.identify_region(event.x, event.y) == "separator":
+            return "break"
+
     def toggleExtractCustom(self):
-        print(self.varExtractSong.get())
-        print(self.varExtractImage.get())
-        print(self.varExtractVideo.get())
-        print(self.varExtractCustom.get())
         if self.varExtractCustom.get():
             self.entry_CustomList.config(state=NORMAL)
         else:

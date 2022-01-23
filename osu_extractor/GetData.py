@@ -11,6 +11,10 @@ def getSubFolder(path):
 def getAllItemsInFolder(path):
     return [f for f in os.listdir(path) if isfile(join(path, f))]
 
+def getFileTypeListInFolder(path):
+    lists = [f.name.split(".")[-1] for f in os.scandir(path) if f.is_file()]
+    return list(set(lists)) # remove dupe
+
 def getFolderName(path):
     return path.split("\\")[-1]
 
