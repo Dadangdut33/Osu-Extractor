@@ -10,7 +10,9 @@
         "img": true,
         "video": false,
         "custom": false,
-        "custom_list": []
+        "custom_list": [
+            ""
+        ]
     },
     "osu_path": "C:\\Games\\Osu"
 }

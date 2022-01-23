@@ -32,8 +32,6 @@ from tqdm import tqdm
 
 # Local
 dir_path = os.path.dirname(os.path.realpath(__file__))
-
-# Global
 def startfile(filename):
     """
     Open a folder or file in the default application.
