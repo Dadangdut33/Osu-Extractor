@@ -248,9 +248,11 @@ class Main:
         # Custom list entry
         self.label_CustomList = Label(self.frame_1_row_4, text="Custom List")
         self.label_CustomList.pack(side=LEFT, padx=(5, 3), pady=5)
+        CreateToolTip(self.label_CustomList, "Custom file type extract. Input the file format with dot and separated by space, ex: .png .wav")
 
         self.entry_CustomList = ttk.Entry(self.frame_1_row_4, width=30)
         self.entry_CustomList.pack(side=LEFT, padx=(0, 5), pady=5, fill=X, expand=True)
+        CreateToolTip(self.entry_CustomList, "Custom file type extract. Input the file format with dot and separated by space, ex: .png .wav")
 
         # Save, cancel, set default btn
         self.btn_Save = ttk.Button(self.frame_1_row_5, text="Save", command=lambda: self.saveConfig())
@@ -273,7 +275,7 @@ class Main:
         self.label_MapCount.pack(side=LEFT, padx=5, pady=5)
 
         # label processed
-        self.label_Processed = Label(self.frame_2_row_1, text="Processed: 0")
+        self.label_Processed = Label(self.frame_2_row_1, text="Processed: 0/0")
         self.label_Processed.pack(side=LEFT, padx=5, pady=5)
 
         # entry for filter
@@ -338,24 +340,104 @@ class Main:
         self.loadbar = ttk.Progressbar(self.frame_3_row_1, orient=HORIZONTAL, length=200, mode="determinate")
         self.loadbar.pack(side=TOP, fill=BOTH, expand=True)
 
+        # For the label
+        self.processed = 0
+        self.total = 0
+
     def clearAll(self):
         # Ask confirmation first
-        if messagebox.askokcancel("Clear All", "Are you sure you want to clear all loaded beatmaps?"):
-            self.table_MapList.delete(*self.table_MapList.get_children())
+        if len(self.table_MapList.get_children()) > 0:
+            if messagebox.askokcancel("Clear All", "Are you sure you want to clear all loaded beatmaps?"):
+                self.table_MapList.delete(*self.table_MapList.get_children())
 
-            # Update label
-            self.label_MapCount.config(text="Beatmaps loaded: 0")
-            self.label_Processed.config(text="Processed: 0")
+                # Update label
+                self.label_MapCount.config(text="Beatmaps loaded: 0")
+                self.label_Processed.config(text="Processed: 0/0")
 
     def clearSelected(self):
         if len(self.table_MapList.selection()) > 0:
             for item in self.table_MapList.selection():
                 self.table_MapList.delete(item)
-
+                self.total -= 1
             # Update label
             self.label_MapCount.config(text="Beatmaps loaded: {}".format(len(self.table_MapList.get_children())))
+            self.label_Processed.config(text="Processed: {}/{}".format(self.processed, self.total))
+
+    def extractAll(self):
+        # Check if value > 0
+        if len(self.table_MapList.get_children()) > 0:
+            # Check if any of the setting is checked
+            if not self.varExtractSong.get() and not self.varExtractImage.get() and not self.varExtractVideo.get() and not self.varExtractCustom.get():
+                messagebox.showerror("Error", "No setting is checked. Please check at least one setting.")
+                return
+
+            # Check if custom only but there is no custom list
+            customList = self.entry_CustomList.get().strip().split(" ")
+            # remove any empty string in customList
+            customList = list(filter(None, customList))
+            # Check if custom list is empty
+            if self.varExtractCustom.get() and len(customList) == 0:
+                messagebox.showerror("Error", "Custom extract is checked but there is no custom list. Please set the custom list first.")
+                return
+
+            # Ask confirmation first
+            if messagebox.askokcancel("Extract All", "Are you sure you want to extract all loaded beatmaps with the current configuration?"):
+                # Loop through all loaded beatmaps
+                counter = 0
+                totals = len(self.table_MapList.get_children())
+                self.loadbar.config(maximum=totals)
+                # Update val
+                updateVal = 50
+                self.disableWidgets()
+
+                for i, item in enumerate(self.table_MapList.get_children()):
+                    theItem = self.table_MapList.item(item)["text"]
+                    theFile = getAllItemsInFolder(theItem)
+                    counter += 1
+                    # Check extract type
+                    if self.varExtractSong.get():
+                        extractFiles(theItem, theFile, ".mp3", self.getOutputPath(self.config["output_path"]["song"], "song"), getFolderName(theItem))
+                    if self.varExtractImage.get():
+                        extractFiles(theItem, theFile, ".jpg", self.getOutputPath(self.config["output_path"]["img"], "img"), getFolderName(theItem))
+                    if self.varExtractVideo.get():
+                        extractFiles(theItem, theFile, ".avi", self.getOutputPath(self.config["output_path"]["video"], "video"), getFolderName(theItem))
+                    if self.varExtractCustom.get():
+                        for custom in customList:
+                            extractFiles(theItem, theFile, custom, self.getOutputPath(self.config["output_path"]["custom"], "custom"), getFolderName(item))
+
+                    # Delete item index 0
+                    self.table_MapList.delete(item)
+
+                    # Update label
+                    self.processed += 1
+                    # Update root
+                    if i % updateVal == 0:
+                        self.label_Processed.config(text="Processed: {}/{}".format(self.processed, self.total))
+                        self.loadbar.config(value=counter)
+                        self.root.update()
+
+                # Update label and enable widgets again
+                self.label_Processed.config(text="Processed: {}/{}".format(self.processed, self.total))
+                self.enableWidgets()
+
+                # Set loadbar back to 0
+                self.loadbar.config(value=0)
+
+                # Tell success
+                messagebox.showinfo("Extract All Success", "Extraction completed successfully! Successfully extracted {} beatmaps.".format(self.processed))
+        else:
+            messagebox.showinfo("Extract All", "No beatmaps loaded.")
 
     def extractSelected(self):
+        # Check if custom only but there is no custom list
+        customList = self.entry_CustomList.get().strip().split(" ")
+        # remove any empty string in customList
+        customList = list(filter(None, customList))
+        # Check if custom list is empty
+        if self.varExtractCustom.get() and len(customList) == 0:
+            messagebox.showerror("Error", "Custom extract is checked but there is no custom list. Please set the custom list first.")
+            return
+
         # Check if there is any selected
         if len(self.table_MapList.selection()) > 0:
             # Ask confirmation first
@@ -376,14 +458,15 @@ class Main:
                     if self.varExtractVideo.get():
                         extractFiles(item, theFile, ".avi", self.getOutputPath(self.config["output_path"]["video"], "video"), getFolderName(item))
                     if self.varExtractCustom.get():
-                        for custom in self.config["default_extract"]["custom_list"]:
+                        for custom in customList:
                             extractFiles(item, theFile, custom, self.getOutputPath(self.config["output_path"]["custom"], "custom"), getFolderName(item))
 
                 for item in self.table_MapList.selection():
                     self.table_MapList.delete(item)
 
-                # # Update label
-                self.label_Processed.config(text="Processed: {}".format(counter))
+                self.processed += counter
+                # Update label
+                self.label_Processed.config(text="Processed: {}/{}".format(self.processed, self.total))
 
                 # Show mbox success
                 messagebox.showinfo("Extract Selected Success", "Successfully extracted {} selected beatmaps".format(counter))
@@ -402,6 +485,7 @@ class Main:
         self.loadbar.config(maximum=totals)
 
         self.label_MapCount.config(text=f"Beatmaps loaded: {totals}")
+        self.label_Processed.config(text="Processed: 0/{}".format(totals))
 
         # clear table
         self.table_MapList.delete(*self.table_MapList.get_children())
@@ -429,6 +513,8 @@ class Main:
 
         # Set loadbar value to 0
         self.loadbar.config(value=0)
+        self.total = totals
+        self.processed = 0
 
         self.enableWidgets()
 
@@ -516,7 +602,7 @@ class Main:
         self.entryExtractCustom.insert(0, self.getOutputPath(self.config["output_path"]["custom"], "custom"))
 
         self.entry_CustomList.delete(0, END)
-        self.entry_CustomList.insert(0, ", ".join(self.config["default_extract"]["custom_list"]))
+        self.entry_CustomList.insert(0, " ".join(self.config["default_extract"]["custom_list"]))
 
         if self.varExtractCustom.get():
             # Enable custom list entry
@@ -539,7 +625,7 @@ class Main:
             self.config["output_path"]["video"] = "default" if dir_path in self.entryExtractVideo.get() else self.entryExtractVideo.get()
             self.config["output_path"]["custom"] = "default" if dir_path in self.entryExtractCustom.get() else self.entryExtractCustom.get()
 
-            self.config["default_extract"]["custom_list"] = self.entry_CustomList.get().split(", ")
+            self.config["default_extract"]["custom_list"] = self.entry_CustomList.get().split(" ")
 
             status, res = jsonHandler.writeSetting(self.config)
             if status:
