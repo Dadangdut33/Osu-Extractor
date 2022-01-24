@@ -544,6 +544,13 @@ class Main:
                 messagebox.showinfo("Extract Selected Success", "Successfully extracted {} selected beatmaps".format(i))
 
     def loadMaps(self):
+        # Check if osu exist in path or not
+        if not os.path.exists(self.entry_OsuPath.get()) or "osu!.exe" not in os.listdir(self.entry_OsuPath.get()):
+            messagebox.showwarning("Warning", "Couldn't find osu!.exe in path provided.", parent=self.root)
+            # show warning and ask confirmation to procceed or not
+            if not messagebox.askokcancel("Warning", "Seems like your Osu! path is incorrect, we couldn't find osu!.exe in the path.\nDo you still want to continue?", parent=self.root):
+                return
+
         # load maps
         path = f"{self.config['osu_path']}\Songs"
         beatmapsPath = getSubFolder(path)
