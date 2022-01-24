@@ -21,11 +21,12 @@ def OpenUrl(url):
     webbrowser.open_new(url)
 
 
-def startfile(filename):
+def startfile(filename, dontCreateIfNotExist=False):
     """
     Open a folder or file in the default application.
     """
-    createPathIfNotExist(filename)
+    if not dontCreateIfNotExist:
+        createPathIfNotExist(filename)
     try:
         os.startfile(filename)
     except FileNotFoundError:
@@ -116,7 +117,7 @@ class Main:
 
         self.file_menu2 = Menu(self.menubar, tearoff=0)
         self.file_menu2.add_command(label="Osu!.exe", command=lambda: self.openOsu())
-        self.file_menu2.add_command(label="Osu! folder", command=lambda: startfile(self.config["osu_path"]))
+        self.file_menu2.add_command(label="Osu! folder", command=lambda: startfile(self.config["osu_path"], True))
         # add output menu for each output type, nested
         self.output_menu = Menu(self.file_menu2, tearoff=0)
         self.output_menu.add_command(label="Song", command=lambda: startfile(self.getOutputPath(self.config["output_path"]["song"], "song")))
