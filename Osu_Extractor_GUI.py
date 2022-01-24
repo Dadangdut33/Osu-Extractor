@@ -194,10 +194,12 @@ class Main:
         # 1
         self.label_OsuPath = Label(self.frame_1_row_1, text="Osu! Path")
         self.label_OsuPath.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.label_OsuPath, "Osu game directory")
 
         self.entry_OsuPath = ttk.Entry(self.frame_1_row_1, width=50)
         self.entry_OsuPath.pack(side=LEFT, padx=5, pady=5, expand=True, fill=X)
         self.entry_OsuPath.bind("<Key>", lambda event: self.allowedKey(event))  # Disable input
+        CreateToolTip(self.entry_OsuPath, "Osu game directory")
 
         self.browse_OsuPath = ttk.Button(self.frame_1_row_1, text="Browse", command=lambda: self.browseOsu())
         self.browse_OsuPath.pack(side=LEFT, padx=5, pady=5)
@@ -206,6 +208,7 @@ class Main:
         self.varExtractSong.set(self.config["default_extract"]["song"])
         self.checkExtractSong = ttk.Checkbutton(self.frame_1_row_2, text="Extract Song (.mp3)", variable=self.varExtractSong)
         self.checkExtractSong.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.checkExtractSong, "Extract song to output folder")
 
         self.entryExtractSong = ttk.Entry(self.frame_1_row_2, width=16)
         self.entryExtractSong.pack(side=LEFT, padx=5, pady=5, fill=X, expand=True)
@@ -217,6 +220,7 @@ class Main:
         self.varExtractImage.set(self.config["default_extract"]["img"])
         self.checkExtractImage = ttk.Checkbutton(self.frame_1_row_2, text="Extract Image (.jpg)", variable=self.varExtractImage)
         self.checkExtractImage.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.checkExtractImage, "Extract image to output folder")
 
         self.entryExtractImage = ttk.Entry(self.frame_1_row_2, width=15)
         self.entryExtractImage.pack(side=LEFT, padx=5, pady=5, fill=X, expand=True)
@@ -228,6 +232,7 @@ class Main:
         self.varExtractVideo.set(self.config["default_extract"]["video"])
         self.checkExtractVideo = ttk.Checkbutton(self.frame_1_row_3, text="Extract Video (.avi)", variable=self.varExtractVideo)
         self.checkExtractVideo.pack(side=LEFT, padx=(5, 11), pady=5)
+        CreateToolTip(self.checkExtractVideo, "Extract video to output folder")
 
         self.entryExtractVideo = ttk.Entry(self.frame_1_row_3, width=12)
         self.entryExtractVideo.pack(side=LEFT, padx=5, pady=5, fill=X, expand=True)
@@ -239,6 +244,7 @@ class Main:
         self.varExtractCustom.set(self.config["default_extract"]["custom"])
         self.checkExtractCustom = ttk.Checkbutton(self.frame_1_row_3, text="Extract Custom", variable=self.varExtractCustom, command=lambda: self.toggleExtractCustom())
         self.checkExtractCustom.pack(side=LEFT, padx=5, pady=5)
+        CreateToolTip(self.checkExtractCustom, "Extract custom lists provided to output folder")
 
         self.entryExtractCustom = ttk.Entry(self.frame_1_row_3, width=15)
         self.entryExtractCustom.pack(side=LEFT, padx=5, pady=5, fill=X, expand=True)
@@ -343,6 +349,13 @@ class Main:
         # For the label
         self.processed = 0
         self.total = 0
+        self.cancel = False
+
+        # Set logo
+        try:
+            self.root.iconbitmap(os.path.join(os.path.dirname(os.path.realpath(__file__)), "logo.ico"))
+        except Exception:
+            pass
 
     def clearAll(self):
         # Ask confirmation first
@@ -364,6 +377,13 @@ class Main:
             self.label_Processed.config(text="Processed: {}/{}".format(self.processed, self.total))
 
     def extractAll(self):
+        # Check if osu exist in path or not
+        if not os.path.exists(self.entry_OsuPath.get()) or "osu!.exe" not in os.listdir(self.entry_OsuPath.get()):
+            messagebox.showwarning("Warning", "Couldn't find osu!.exe in path provided.", parent=self.root)
+            # show warning and ask confirmation to procceed or not
+            if not messagebox.askokcancel("Warning", "Seems like your Osu! path is incorrect, we couldn't find osu!.exe in the path.\nDo you still want to continue?", parent=self.root):
+                return
+
         # Check if value > 0
         if len(self.table_MapList.get_children()) > 0:
             # Check if any of the setting is checked
@@ -429,6 +449,13 @@ class Main:
             messagebox.showinfo("Extract All", "No beatmaps loaded.")
 
     def extractSelected(self):
+        # Check if osu exist in path or not
+        if not os.path.exists(self.entry_OsuPath.get()) or "osu!.exe" not in os.listdir(self.entry_OsuPath.get()):
+            messagebox.showwarning("Warning", "Couldn't find osu!.exe in path provided.", parent=self.root)
+            # show warning and ask confirmation to procceed or not
+            if not messagebox.askokcancel("Warning", "Seems like your Osu! path is incorrect, we couldn't find osu!.exe in the path.\nDo you still want to continue?", parent=self.root):
+                return
+
         # Check if custom only but there is no custom list
         customList = self.entry_CustomList.get().strip().split(" ")
         # remove any empty string in customList
@@ -654,8 +681,20 @@ class Main:
     def browseOsu(self):
         pathGet = filedialog.askdirectory(initialdir=self.config["osu_path"])
         if pathGet:
+            # check if osu!.exe is in the directory
+            if not os.path.isfile(pathGet + "\\osu!.exe"):
+                # Show warning
+                messagebox.showwarning("Warning", "Could not found osu!.exe in the directory!", parent=self.root)
+
+                # Ask confirmation to procceed
+                if not messagebox.askokcancel("Warning", "Osu!.exe could not be found in the directory provided. Are you sure you want to use it as the Osu! path?", parent=self.root):
+                    return
+
             self.entry_OsuPath.delete(0, END)
             self.entry_OsuPath.insert(0, pathGet.replace("/", "\\"))
+
+            # Show success
+            messagebox.showinfo("Success", "Osu! path set successfully!", parent=self.root)
 
     def browseOutputPath(self, type, ref):
         pathGet = filedialog.askdirectory(initialdir=self.getOutputPath(self.config["output_path"][type], type))
