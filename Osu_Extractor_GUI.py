@@ -317,6 +317,9 @@ class Main:
         self.btn_ClearSelected.pack(side=LEFT, padx=5, pady=5)
         CreateToolTip(self.btn_ClearSelected, "Delete currently selected beatmaps from the table")
 
+        self.btn_CancelExtract = ttk.Button(self.frame_2_row_2, text="Cancel/Stop Extract", command=lambda: self.cancelExtract())
+        self.btn_CancelExtract.pack(side=LEFT, padx=5, pady=5)
+
         # Table for map list
         self.scrollbarY = Scrollbar(self.frame_2_row_3, orient=VERTICAL)
         self.scrollbarY.pack(side=RIGHT, fill=Y)
@@ -357,6 +360,9 @@ class Main:
         except Exception:
             pass
 
+    def cancelExtract(self):
+        self.cancel = True
+
     def clearAll(self):
         # Ask confirmation first
         if len(self.table_MapList.get_children()) > 0:
@@ -377,6 +383,8 @@ class Main:
             self.label_Processed.config(text="Processed: {}/{}".format(self.processed, self.total))
 
     def extractAll(self):
+        self.cancel = False  # reset cancel
+
         # Check if osu exist in path or not
         if not os.path.exists(self.entry_OsuPath.get()) or "osu!.exe" not in os.listdir(self.entry_OsuPath.get()):
             messagebox.showwarning("Warning", "Couldn't find osu!.exe in path provided.", parent=self.root)
@@ -402,18 +410,28 @@ class Main:
 
             # Ask confirmation first
             if messagebox.askokcancel("Extract All", "Are you sure you want to extract all loaded beatmaps with the current configuration?"):
-                # Loop through all loaded beatmaps
-                counter = 0
+                # Data
                 totals = len(self.table_MapList.get_children())
                 self.loadbar.config(maximum=totals)
+
                 # Update val
                 updateVal = 50
+                if totals < 50:
+                    updateVal = 20
+
+                # Disable widgets
                 self.disableWidgets()
 
+                # Loop through all loaded beatmaps
                 for i, item in enumerate(self.table_MapList.get_children()):
+                    # Check if cancel is pressed
+                    if self.cancel:
+                        # show mbox info cancel
+                        messagebox.showinfo("Cancelled", "Extraction cancelled/Stopped by user.", parent=self.root)
+                        break
+
                     theItem = self.table_MapList.item(item)["text"]
                     theFile = getAllItemsInFolder(theItem)
-                    counter += 1
                     # Check extract type
                     if self.varExtractSong.get():
                         extractFiles(theItem, theFile, ".mp3", self.getOutputPath(self.config["output_path"]["song"], "song"), getFolderName(theItem))
@@ -433,7 +451,7 @@ class Main:
                     # Update root
                     if i % updateVal == 0:
                         self.label_Processed.config(text="Processed: {}/{}".format(self.processed, self.total))
-                        self.loadbar.config(value=counter)
+                        self.loadbar.config(value=i)
                         self.root.update()
 
                 # Update label and enable widgets again
@@ -444,11 +462,13 @@ class Main:
                 self.loadbar.config(value=0)
 
                 # Tell success
-                messagebox.showinfo("Extract All Success", "Extraction completed successfully! Successfully extracted {} beatmaps.".format(self.processed))
+                messagebox.showinfo("Extraction Info", "Extraction completed successfully! Successfully extracted {} beatmaps.".format(i))
         else:
-            messagebox.showinfo("Extract All", "No beatmaps loaded.")
+            messagebox.showerror("Error", "No beatmaps loaded.")
 
     def extractSelected(self):
+        self.cancel = False  # reset cancel
+
         # Check if osu exist in path or not
         if not os.path.exists(self.entry_OsuPath.get()) or "osu!.exe" not in os.listdir(self.entry_OsuPath.get()):
             messagebox.showwarning("Warning", "Couldn't find osu!.exe in path provided.", parent=self.root)
@@ -471,12 +491,25 @@ class Main:
             if messagebox.askokcancel("Extract Selected", "Are you sure you want to extract currently selected beatmaps with the current configuration?"):
                 # Get the data of selected in table
                 selected_data = [self.table_MapList.item(item)["values"] for item in self.table_MapList.selection()]
-                counter = 0
-                for item in selected_data:
+                totals = len(selected_data)
+                self.loadbar.config(maximum=totals)
+
+                # Update val
+                updateVal = 5
+
+                # Disable widgets
+                self.disableWidgets()
+
+                for i, item in enumerate(selected_data):
+                    # Check if cancel is pressed
+                    if self.cancel:
+                        # show mbox info cancel
+                        messagebox.showinfo("Cancelled", "Extraction cancelled/Stopped by user.", parent=self.root)
+                        break
+
                     item = f"{self.entry_OsuPath.get()}\\songs\\{item[1]}"
                     theFile = getAllItemsInFolder(item)
 
-                    counter += 1
                     # Check extract type
                     if self.varExtractSong.get():
                         extractFiles(item, theFile, ".mp3", self.getOutputPath(self.config["output_path"]["song"], "song"), getFolderName(item))
@@ -488,15 +521,26 @@ class Main:
                         for custom in customList:
                             extractFiles(item, theFile, custom, self.getOutputPath(self.config["output_path"]["custom"], "custom"), getFolderName(item))
 
+                    # Update label
+                    self.processed += 1
+                    # Update root
+                    if i % updateVal == 0:
+                        self.label_Processed.config(text="Processed: {}/{}".format(self.processed, self.total))
+                        self.loadbar.config(value=i)
+                        self.root.update()
+
                 for item in self.table_MapList.selection():
                     self.table_MapList.delete(item)
 
-                self.processed += counter
-                # Update label
+                # Update label and enable it again
                 self.label_Processed.config(text="Processed: {}/{}".format(self.processed, self.total))
+                self.enableWidgets()
+
+                # reset loadbar
+                self.loadbar.config(value=0)
 
                 # Show mbox success
-                messagebox.showinfo("Extract Selected Success", "Successfully extracted {} selected beatmaps".format(counter))
+                messagebox.showinfo("Extract Selected Success", "Successfully extracted {} selected beatmaps".format(i))
 
     def loadMaps(self):
         # load maps
@@ -542,6 +586,7 @@ class Main:
         self.loadbar.config(value=0)
         self.total = totals
         self.processed = 0
+        self.cancel = False  # reset cancel
 
         self.enableWidgets()
 
@@ -566,6 +611,7 @@ class Main:
         for child in self.frame_2_row_2.winfo_children():
             child.configure(state=DISABLED)
 
+        self.btn_CancelExtract.config(state=NORMAL)
         self.entryExtractSong.bind("<Button-3>", lambda event: None)
         self.entryExtractImage.bind("<Button-3>", lambda event: None)
         self.entryExtractVideo.bind("<Button-3>", lambda event: None)
