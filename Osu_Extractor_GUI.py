@@ -551,7 +551,7 @@ class Main:
                 return
 
         # load maps
-        path = f"{self.config['osu_path']}\Songs"
+        path = f"{self.entry_OsuPath.get()}\Songs"
         beatmapsPath = getSubFolder(path)
 
         # check filter
