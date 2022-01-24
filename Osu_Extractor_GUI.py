@@ -2,7 +2,6 @@
 import os
 import subprocess
 from sys import exit
-import threading
 from tkinter import *
 from tkinter import filedialog
 from tkinter import messagebox
@@ -463,7 +462,7 @@ class Main:
                 self.loadbar.config(value=0)
 
                 # Tell success
-                messagebox.showinfo("Extraction Info", "Extraction completed successfully! Successfully extracted {} beatmaps.".format(i))
+                messagebox.showinfo("Extraction Info", "Extraction completed successfully! Successfully extracted {} beatmaps.".format(i + 1))
         else:
             messagebox.showerror("Error", "No beatmaps loaded.")
 
@@ -541,7 +540,7 @@ class Main:
                 self.loadbar.config(value=0)
 
                 # Show mbox success
-                messagebox.showinfo("Extract Selected Success", "Successfully extracted {} selected beatmaps".format(i))
+                messagebox.showinfo("Extract Selected Success", "Successfully extracted {} selected beatmaps".format(i + 1))
 
     def loadMaps(self):
         # Check if osu exist in path or not
