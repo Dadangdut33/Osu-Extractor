@@ -100,19 +100,6 @@ class CreateToolTip(object):
 
 class Main:
     def __init__(self):
-        # First read the config file
-        status, data = jsonHandler.loadSetting()
-        if status == False:  # No config file
-            statusDefault, dataDefault = jsonHandler.setDefault()
-            if statusDefault == False:
-                messagebox.showerror("Error", "Fail to create default setting file! Please check the folder permission. Error details " + str(data))
-                exit(1)
-            else:
-                messagebox.showinfo("Info", "Settings file not found! Default setting file has been created and aplied!")
-                self.config = jsonHandler.default_Setting
-        else:
-            self.config = data
-
         # Create the main window
         self.root = Tk()
         self.root.title("Osu! Extractor V" + version)
@@ -149,6 +136,19 @@ class Main:
         self.root.config(menu=self.menubar)
 
         self.root.bind("<F1>", self.about)
+
+        # First read the config file
+        status, data = jsonHandler.loadSetting()
+        if status == False:  # No config file
+            statusDefault, dataDefault = jsonHandler.setDefault()
+            if statusDefault == False:
+                messagebox.showerror("Error", "Fail to create default setting file! Please check the folder permission. Error details " + str(data))
+                exit(1)
+            else:
+                messagebox.showinfo("Info", "Settings file not found! Default setting file has been created and aplied!")
+                self.config = jsonHandler.default_Setting
+        else:
+            self.config = data
 
         # Frames
         # 1
